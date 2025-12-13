@@ -722,6 +722,18 @@ export type Database = {
 
 type DefaultSchema = Database[Extract<keyof Database, "public">]
 
+type SchemaTables<T extends keyof Database> = Database[T] extends { Tables: infer TT; Views: infer VV }
+  ? TT & VV
+  : never
+
+type SchemaTablesOnly<T extends keyof Database> = Database[T] extends { Tables: infer TT }
+  ? TT
+  : never
+
+type SchemaEnums<T extends keyof Database> = Database[T] extends { Enums: infer E }
+  ? E
+  : never
+
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
@@ -729,14 +741,12 @@ export type Tables<
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof SchemaTables<DefaultSchemaTableNameOrOptions["schema"]>
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof Database
 }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? SchemaTables<DefaultSchemaTableNameOrOptions["schema"]>[TableName] extends {
       Row: infer R
     }
     ? R
@@ -758,12 +768,12 @@ export type TablesInsert<
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof SchemaTablesOnly<DefaultSchemaTableNameOrOptions["schema"]>
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof Database
 }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? SchemaTablesOnly<DefaultSchemaTableNameOrOptions["schema"]>[TableName] extends {
       Insert: infer I
     }
     ? I
@@ -783,12 +793,12 @@ export type TablesUpdate<
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof SchemaTablesOnly<DefaultSchemaTableNameOrOptions["schema"]>
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof Database
 }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? SchemaTablesOnly<DefaultSchemaTableNameOrOptions["schema"]>[TableName] extends {
       Update: infer U
     }
     ? U
@@ -808,12 +818,12 @@ export type Enums<
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof SchemaEnums<DefaultSchemaEnumNameOrOptions["schema"]>
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof Database
 }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  ? SchemaEnums<DefaultSchemaEnumNameOrOptions["schema"]>[EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never

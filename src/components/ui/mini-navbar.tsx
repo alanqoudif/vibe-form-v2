@@ -194,7 +194,9 @@ function UserMenu() {
         <div className="absolute top-full right-0 mt-2 py-1 min-w-[200px] rounded-lg bg-popover border border-border shadow-lg z-50">
           <div className="px-3 py-2 border-b border-border">
             <p className="text-sm font-medium text-foreground">{user.full_name || 'User'}</p>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            {user.username && (
+              <p className="text-xs text-muted-foreground truncate">{user.username}</p>
+            )}
           </div>
           <div className="py-1">
             <Link 

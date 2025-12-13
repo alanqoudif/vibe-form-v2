@@ -28,7 +28,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import type { Form, FormQuestion } from '@/types/database';
+import type { Form, FormQuestion, Json } from '@/types/database';
 import { ThemePicker } from '@/components/forms/theme-picker';
 import { FormTheme, DEFAULT_THEME } from '@/types/form-theme';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -134,7 +134,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           title: form.title,
           description: form.description,
           category: form.category,
-          settings: { ...currentSettings, theme },
+          settings: { ...currentSettings, theme } as unknown as Json,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id);

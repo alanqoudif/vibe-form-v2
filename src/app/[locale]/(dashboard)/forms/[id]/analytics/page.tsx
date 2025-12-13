@@ -454,7 +454,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
                               outerRadius={80}
                               dataKey="value"
                               label={({ name, percent }) => 
-                                `${name} (${(percent * 100).toFixed(0)}%)`
+                                `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
                               }
                             >
                               {stats.map((_, i) => (
