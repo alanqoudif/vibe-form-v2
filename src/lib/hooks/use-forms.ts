@@ -87,6 +87,8 @@ export function useForm(formId: string) {
       return data as Form;
     },
     enabled: !!formId,
+    staleTime: 60 * 1000, // 1 minute - prevent refetching
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
   });
 }
 
