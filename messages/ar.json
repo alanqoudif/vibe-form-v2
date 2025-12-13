@@ -69,6 +69,7 @@
     "viewAnalytics": "التحليلات",
     "editForm": "تعديل",
     "created": "تم الإنشاء",
+    "actions": "إجراءات",
     "manageDescription": "إدارة وتحليل جميع نماذجك في مكان واحد",
     "createNew": "إنشاء نموذج جديد",
     "totalForms": "إجمالي النماذج",
@@ -105,6 +106,8 @@
     "saveDraft": "حفظ كمسودة",
     "settings": "إعدادات",
     "customizeTheme": "تخصيص المظهر",
+    "edit": "تعديل",
+    "cancel": "إلغاء",
     "questionTypes": {
       "short_text": "نص قصير",
       "long_text": "نص طويل",
@@ -259,7 +262,8 @@
     "historyFilterEarn": "المكاسب",
     "historyFilterSpend": "الإنفاق",
     "historyEmptyEarn": "لا يوجد نشاط كسب بعد",
-    "historyEmptySpend": "لا يوجد نشاط إنفاق بعد"
+    "historyEmptySpend": "لا يوجد نشاط إنفاق بعد",
+    "boost": "تعزيز النموذج"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -309,5 +313,13 @@
     "saved": "تم حفظ الإعدادات بنجاح",
     "saveError": "فشل حفظ الإعدادات",
     "change": "تغيير"
+  },
+  "building": {
+    "title": "منشئ الذكاء الاصطناعي يعمل",
+    "subtitle": "تحويل أفكارك إلى نموذج قوي",
+    "analyzing": "جاري تحليل طلبك...",
+    "structuring": "تصميم بنية النموذج...",
+    "generating": "توليد أسئلة ذكية...",
+    "finalizing": "إنهاء نموذجك..."
   }
 }

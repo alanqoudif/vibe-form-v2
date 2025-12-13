@@ -69,6 +69,7 @@
     "viewAnalytics": "Analytics",
     "editForm": "Edit",
     "created": "Created",
+    "actions": "Actions",
     "manageDescription": "Manage and analyze all your forms in one place",
     "createNew": "Create New Form",
     "totalForms": "Total Forms",
@@ -105,6 +106,8 @@
     "saveDraft": "Save Draft",
     "settings": "Settings",
     "customizeTheme": "Customize Theme",
+    "edit": "Edit",
+    "cancel": "Cancel",
     "questionTypes": {
       "short_text": "Short Text",
       "long_text": "Long Text",
@@ -259,7 +262,8 @@
     "historyFilterEarn": "Earnings",
     "historyFilterSpend": "Spending",
     "historyEmptyEarn": "No earning activity yet",
-    "historyEmptySpend": "No spending activity yet"
+    "historyEmptySpend": "No spending activity yet",
+    "boost": "Boost Form"
   },
   "auth": {
     "login": "Log in",
@@ -309,5 +313,13 @@
     "saved": "Settings saved successfully",
     "saveError": "Failed to save settings",
     "change": "Change"
+  },
+  "building": {
+    "title": "AI Builder at Work",
+    "subtitle": "Transforming your ideas into a powerful form",
+    "analyzing": "Analyzing your request...",
+    "structuring": "Designing form structure...",
+    "generating": "Generating intelligent questions...",
+    "finalizing": "Finalizing your form..."
   }
 }
