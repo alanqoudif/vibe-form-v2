@@ -175,7 +175,7 @@ export function usePublicForms(excludeUserId?: string) {
         ...form,
         response_count: (form.responses as { count: number }[])?.[0]?.count || 0,
         owner_name: (form.profiles as { full_name?: string })?.full_name,
-        reward: 10 + Math.floor(Math.random() * 20), // Simulated reward
+        reward: (form.settings as { reward?: number })?.reward || 10, // Default to 10 if not set
         responses: undefined,
         profiles: undefined,
       }));

@@ -85,7 +85,17 @@
     "openForm": "Open Form",
     "analytics": "Analytics",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "workspacePulse": "Workspace pulse",
+    "activeForms": "Active forms",
+    "drafts": "Drafts",
+    "createQuickActions": "Quick actions",
+    "quickActionsDescription": "Need a head start? Generate or share your form with one tap.",
+    "shareForm": "Share form",
+    "promoteForm": "Promote form",
+    "boost": "Boost",
+    "boostSuccess": "Form boosted successfully! (Simulated)",
+    "insufficientCredits": "Insufficient credits. You need {amount} credits."
   },
   "builder": {
     "title": "Form Builder",
@@ -213,10 +223,12 @@
     "noForms": "No forms available",
     "checkLater": "Check back later for new surveys",
     "by": "by",
-    "answerAndEarn": "Answer & Earn"
+    "answerAndEarn": "Answer & Earn",
+    "searchPlaceholder": "Search for interesting surveys..."
   },
   "credits": {
     "balance": "Credit Balance",
+    "creditsLabel": "Available Credits",
     "earn": "Earn Credits",
     "spend": "Spend Credits",
     "history": "History",
@@ -232,7 +244,22 @@
     "completedSurvey": "Completed Survey",
     "boostedForm": "Boosted Form",
     "requestedResponses": "Requested Responses",
-    "welcomeBonus": "Welcome Bonus"
+    "welcomeBonus": "Welcome Bonus",
+    "recentActivity": "Recent Activity",
+    "last30Days": "Last 30 Days",
+    "quickActionsTitle": "Quick Actions",
+    "quickActionsDescription": "Earn more or spend wisely.",
+    "earnCardTitle": "Complete Surveys",
+    "earnCardDescription": "Earn credits for every honest answer.",
+    "spendCardTitle": "Boost Reach",
+    "spendCardDescription": "Get more responses faster.",
+    "tipsCardTitle": "Pro Tips",
+    "tipsCardDescription": "Quality answers = more opportunities.",
+    "historyFilterAll": "All",
+    "historyFilterEarn": "Earnings",
+    "historyFilterSpend": "Spending",
+    "historyEmptyEarn": "No earning activity yet",
+    "historyEmptySpend": "No spending activity yet"
   },
   "auth": {
     "login": "Log in",

@@ -13,6 +13,8 @@ Return a JSON object with this exact structure:
   "title": "Form title (concise, professional)",
   "description": "Brief description of the form's purpose",
   "category": "One of: research, feedback, registration, assessment, survey, other",
+  "estimated_time": 5, // estimated minutes to complete (integer)
+  "difficulty": 5, // 1-10 scale (1=easy, 10=complex)
   "questions": [
     {
       "type": "short_text | long_text | mcq | checkbox | likert | rating | dropdown",
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
     });
 
     const responseContent = completion.choices[0]?.message?.content;
-    
+
     if (!responseContent) {
       return NextResponse.json(
         { message: 'Failed to generate form. Please try again.' },
@@ -114,6 +116,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate AI-determined reward
+    // Base: 10 points
+    // Time: 2 points per minute
+    // Difficulty: 5 points per difficulty level
+    const estimatedTime = formData.estimated_time || 5;
+    const difficulty = formData.difficulty || 3;
+    const calculatedReward = 10 + (estimatedTime * 2) + (difficulty * 5);
+
     // Create the form in the database
     const { data: form, error: formError } = await supabase
       .from('forms')
@@ -126,7 +136,11 @@ export async function POST(request: NextRequest) {
         visibility: 'unlisted',
         ai_prompt: prompt,
         primary_language: 'en',
-        settings: {},
+        settings: {
+          reward: calculatedReward,
+          estimated_time: estimatedTime,
+          difficulty: difficulty
+        },
       })
       .select()
       .single();

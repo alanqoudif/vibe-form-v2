@@ -85,7 +85,17 @@
     "openForm": "فتح النموذج",
     "analytics": "التحليلات",
     "edit": "تعديل",
-    "delete": "حذف"
+    "delete": "حذف",
+    "workspacePulse": "نبض مساحة العمل",
+    "activeForms": "النماذج النشطة",
+    "drafts": "المسودات",
+    "createQuickActions": "إجراءات سريعة",
+    "quickActionsDescription": "تحتاج بداية سريعة؟ أنشئ أو شارك نموذجك بلمسة واحدة.",
+    "shareForm": "مشاركة النموذج",
+    "promoteForm": "ترويج النموذج",
+    "boost": "تعزيز",
+    "boostSuccess": "تم تعزيز النموذج بنجاح! (محاكاة)",
+    "insufficientCredits": "رصيد غير كافي. تحتاج {amount} رصيد."
   },
   "builder": {
     "title": "منشئ النماذج",
@@ -213,10 +223,12 @@
     "noForms": "لا توجد نماذج متاحة",
     "checkLater": "تحقق لاحقاً للمزيد من الاستبيانات",
     "by": "من",
-    "answerAndEarn": "أجب واكسب"
+    "answerAndEarn": "أجب واكسب",
+    "searchPlaceholder": "ابحث عن استبيانات مثيرة..."
   },
   "credits": {
     "balance": "رصيدك",
+    "creditsLabel": "الرصيد المتاح",
     "earn": "اكسب رصيد",
     "spend": "استخدم رصيدك",
     "history": "السجل",
@@ -232,7 +244,22 @@
     "completedSurvey": "أكملت استبيان",
     "boostedForm": "روّجت نموذج",
     "requestedResponses": "طلبت ردود",
-    "welcomeBonus": "مكافأة الترحيب"
+    "welcomeBonus": "مكافأة الترحيب",
+    "recentActivity": "النشاط الأخير",
+    "last30Days": "آخر 30 يوم",
+    "quickActionsTitle": "إجراءات سريعة",
+    "quickActionsDescription": "اكسب المزيد أو أنفق بحكمة.",
+    "earnCardTitle": "أكمل استبيانات",
+    "earnCardDescription": "اكسب رصيد لكل إجابة صادقة.",
+    "spendCardTitle": "عزز الوصول",
+    "spendCardDescription": "احصل على ردود أكثر بسرعة.",
+    "tipsCardTitle": "نصائح احترافية",
+    "tipsCardDescription": "إجابات عالية الجودة = فرص أكثر.",
+    "historyFilterAll": "الكل",
+    "historyFilterEarn": "المكاسب",
+    "historyFilterSpend": "الإنفاق",
+    "historyEmptyEarn": "لا يوجد نشاط كسب بعد",
+    "historyEmptySpend": "لا يوجد نشاط إنفاق بعد"
   },
   "auth": {
     "login": "تسجيل الدخول",
