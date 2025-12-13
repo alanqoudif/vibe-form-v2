@@ -154,7 +154,7 @@ export default function FeedPage() {
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-1 text-green-500 dark:text-green-400">
                           <Gift className="w-4 h-4" />
-                          <span className="font-medium">{t('reward', { amount: form.reward })}</span>
+                          <span className="font-medium">{t('reward', { amount: form.reward ?? 0 })}</span>
                         </div>
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Clock className="w-4 h-4" />
