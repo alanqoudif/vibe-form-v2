@@ -12,7 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Zap, CheckCircle, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import type { Form, FormQuestion, Json } from '@/types/database';
 import { FormTheme, DEFAULT_THEME } from '@/types/form-theme';
 import { cn } from '@/lib/utils';
@@ -356,10 +357,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div 
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: theme.headerColor }}
             >
-              <Zap className="w-4 h-4 text-white" />
+              <Image
+                src="/fonts/vibe form logo.png"
+                alt="Vibe Form Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
             </div>
             <span style={{ color: theme.questionTextColor }} className="font-medium">Vibe Form</span>
           </div>

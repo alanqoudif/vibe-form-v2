@@ -19,7 +19,6 @@ import {
   Eye, 
   Send, 
   Loader2,
-  Zap,
   Palette,
   LayoutGrid,
   Monitor,
@@ -28,6 +27,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import Image from 'next/image';
 import type { Form, FormQuestion, Json } from '@/types/database';
 import { ThemePicker } from '@/components/forms/theme-picker';
 import { FormTheme, DEFAULT_THEME } from '@/types/form-theme';
@@ -273,8 +273,14 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
           {/* Logo and Title */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shrink-0">
-              <Zap className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+              <Image
+                src="/fonts/vibe form logo.png"
+                alt="Vibe Form Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
             </div>
             <Input
               value={form?.title || ''}
