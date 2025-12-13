@@ -7,7 +7,11 @@ import type { Form } from '@/types/database';
 
 export type FormWithCount = Form & { response_count?: number };
 
-// Query keys for cache management
+export type FormListItem = Pick<
+  Form,
+  'id' | 'title' | 'description' | 'status' | 'visibility' | 'created_at'
+> & { response_count: number };
+
 export const formKeys = {
   all: ['forms'] as const,
   lists: () => [...formKeys.all, 'list'] as const,
@@ -23,7 +27,7 @@ export function useForms(limit?: number) {
 
   return useQuery({
     queryKey: limit ? formKeys.recent(user?.id || '', limit) : formKeys.list(user?.id || ''),
-    queryFn: async (): Promise<FormWithCount[]> => {
+    queryFn: async (): Promise<FormListItem[]> => {
       if (!user) return [];
 
       let query = supabase
@@ -51,12 +55,11 @@ export function useForms(limit?: number) {
         throw error;
       }
 
-      // Transform the data to include response_count
       return (data || []).map(form => ({
         ...form,
         response_count: (form.responses as { count: number }[])?.[0]?.count || 0,
         responses: undefined,
-      })) as FormWithCount[];
+      })) as FormListItem[];
     },
     enabled: !!user,
     staleTime: 30 * 1000, // 30 seconds

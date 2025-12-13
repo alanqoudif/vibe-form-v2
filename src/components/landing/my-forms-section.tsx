@@ -6,19 +6,19 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  FileText, 
-  BarChart3, 
-  Edit3, 
-  Clock, 
+import {
+  FileText,
+  BarChart3,
+  Edit3,
+  Clock,
   Users,
   Plus,
-  Sparkles 
+  Sparkles
 } from 'lucide-react';
-import type { Form } from '@/types/database';
+import type { FormListItem } from '@/lib/hooks/use-forms';
 
 interface MyFormsSectionProps {
-  forms: (Form & { response_count?: number })[];
+  forms: FormListItem[];
   isLoading?: boolean;
 }
 
@@ -40,8 +40,8 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, { 
-      month: 'short', 
+    return date.toLocaleDateString(undefined, {
+      month: 'short',
       day: 'numeric',
       year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
     });
@@ -88,8 +88,8 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
             </div>
             <h3 className="text-xl font-medium text-foreground mb-2">{t('empty')}</h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t('emptyDescription')}</p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="border-border text-foreground hover:bg-muted"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
@@ -116,11 +116,11 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
             </Button>
           </Link>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {forms.map((form, index) => (
-            <Card 
-              key={form.id} 
+            <Card
+              key={form.id}
               className="bg-card border-border hover:border-primary/30 transition-all hover:shadow-lg group animate-fade-in"
               style={{ animationDelay: `${index * 100}ms` }}
             >
@@ -129,22 +129,22 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
                   <CardTitle className="text-foreground text-lg line-clamp-1 group-hover:text-primary transition-colors">
                     {form.title}
                   </CardTitle>
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className={`shrink-0 text-xs ${getStatusColor(form.status)}`}
                   >
                     {t(form.status)}
                   </Badge>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="pb-3">
                 {form.description && (
                   <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
                     {form.description}
                   </p>
                 )}
-                
+
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
@@ -156,11 +156,11 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
                   </div>
                 </div>
               </CardContent>
-              
+
               <CardFooter className="pt-3 border-t border-border gap-2">
                 <Link href={`/forms/${form.id}/analytics`} className="flex-1">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="w-full text-muted-foreground hover:text-foreground hover:bg-muted"
                     size="sm"
                   >
@@ -169,8 +169,8 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
                   </Button>
                 </Link>
                 <Link href={`/forms/${form.id}/builder`} className="flex-1">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="w-full text-muted-foreground hover:text-foreground hover:bg-muted"
                     size="sm"
                   >
