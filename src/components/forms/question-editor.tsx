@@ -1,0 +1,265 @@
+"use client";
+
+import { useTranslations } from 'next-intl';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { useFormStore } from '@/lib/stores/form-store';
+import { questionTypeConfig, type QuestionType } from './question-types';
+import type { FormQuestion, Json } from '@/types/database';
+
+interface QuestionOptions {
+  placeholder?: string;
+  maxLength?: number;
+  rows?: number;
+  choices?: string[];
+  minSelect?: number;
+  maxSelect?: number;
+  scale?: 5 | 7;
+  labels?: { low: string; high: string };
+  maxStars?: 5 | 10;
+}
+
+export function QuestionEditor() {
+  const t = useTranslations('builder');
+  const { questions, selectedQuestionId, updateQuestion, removeQuestion } = useFormStore();
+  
+  const selectedQuestion = questions.find(q => q.id === selectedQuestionId);
+  
+  if (!selectedQuestion) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        <p>{t('selectQuestion') || 'Select a question to edit'}</p>
+      </div>
+    );
+  }
+
+  const options = (selectedQuestion.options || {}) as QuestionOptions;
+
+  const handleUpdate = (updates: Partial<FormQuestion>) => {
+    updateQuestion(selectedQuestion.id, updates);
+  };
+
+  const handleOptionsUpdate = (optionUpdates: Partial<QuestionOptions>) => {
+    handleUpdate({
+      options: { ...options, ...optionUpdates } as Json,
+    });
+  };
+
+  const handleChoiceChange = (index: number, value: string) => {
+    const newChoices = [...(options.choices || [])];
+    newChoices[index] = value;
+    handleOptionsUpdate({ choices: newChoices });
+  };
+
+  const addChoice = () => {
+    const newChoices = [...(options.choices || []), `Option ${(options.choices?.length || 0) + 1}`];
+    handleOptionsUpdate({ choices: newChoices });
+  };
+
+  const removeChoice = (index: number) => {
+    const newChoices = (options.choices || []).filter((_, i) => i !== index);
+    handleOptionsUpdate({ choices: newChoices });
+  };
+
+  const needsChoices = ['mcq', 'checkbox', 'dropdown'].includes(selectedQuestion.type);
+
+  return (
+    <div className="p-6 space-y-6 overflow-y-auto h-full">
+      <Card className="bg-card border-border">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg text-foreground">{t('questionSettings') || 'Question Settings'}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Question Type */}
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">{t('questionType') || 'Question Type'}</Label>
+            <Select
+              value={selectedQuestion.type}
+              onValueChange={(value) => handleUpdate({ type: value })}
+            >
+              <SelectTrigger className="bg-muted border-border text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border">
+                {Object.entries(questionTypeConfig).map(([key, config]) => (
+                  <SelectItem 
+                    key={key} 
+                    value={key}
+                    className="text-foreground hover:bg-accent"
+                  >
+                    {config.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator className="bg-border" />
+
+          {/* Question Title */}
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">{t('question') || 'Question'}</Label>
+            <Textarea
+              value={selectedQuestion.title}
+              onChange={(e) => handleUpdate({ title: e.target.value })}
+              placeholder={t('enterQuestion') || 'Enter your question...'}
+              className="bg-muted border-border text-foreground placeholder:text-muted-foreground resize-none"
+              rows={2}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">{t('description')} ({t('optional') || 'Optional'})</Label>
+            <Input
+              value={selectedQuestion.description || ''}
+              onChange={(e) => handleUpdate({ description: e.target.value || null })}
+              placeholder={t('addHelperText') || 'Add helper text...'}
+              className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+
+          {/* Required Toggle */}
+          <div className="flex items-center justify-between">
+            <Label className="text-muted-foreground">{t('required')}</Label>
+            <Switch
+              checked={selectedQuestion.required || false}
+              onCheckedChange={(checked) => handleUpdate({ required: checked })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Options for choice-based questions */}
+      {needsChoices && (
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-foreground">{t('options')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {(options.choices || []).map((choice, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                <Input
+                  value={choice}
+                  onChange={(e) => handleChoiceChange(index, e.target.value)}
+                  placeholder={`${t('option') || 'Option'} ${index + 1}`}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeChoice(index)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              onClick={addChoice}
+              className="w-full bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('addOption')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Likert Scale Options */}
+      {selectedQuestion.type === 'likert' && (
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-foreground">{t('scaleSettings') || 'Scale Settings'}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">{t('scale') || 'Scale'}</Label>
+              <Select
+                value={String(options.scale || 5)}
+                onValueChange={(value) => handleOptionsUpdate({ scale: Number(value) as 5 | 7 })}
+              >
+                <SelectTrigger className="bg-muted border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="5" className="text-foreground">1-5</SelectItem>
+                  <SelectItem value="7" className="text-foreground">1-7</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">{t('lowLabel') || 'Low Label'}</Label>
+                <Input
+                  value={options.labels?.low || ''}
+                  onChange={(e) => handleOptionsUpdate({ 
+                    labels: { ...options.labels, low: e.target.value, high: options.labels?.high || '' }
+                  })}
+                  placeholder={t('stronglyDisagree') || 'Strongly Disagree'}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">{t('highLabel') || 'High Label'}</Label>
+                <Input
+                  value={options.labels?.high || ''}
+                  onChange={(e) => handleOptionsUpdate({ 
+                    labels: { ...options.labels, high: e.target.value, low: options.labels?.low || '' }
+                  })}
+                  placeholder={t('stronglyAgree') || 'Strongly Agree'}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rating Options */}
+      {selectedQuestion.type === 'rating' && (
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-foreground">{t('ratingSettings') || 'Rating Settings'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">{t('maxStars') || 'Max Stars'}</Label>
+              <Select
+                value={String(options.maxStars || 5)}
+                onValueChange={(value) => handleOptionsUpdate({ maxStars: Number(value) as 5 | 10 })}
+              >
+                <SelectTrigger className="bg-muted border-border text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="5" className="text-foreground">5 {t('stars') || 'Stars'}</SelectItem>
+                  <SelectItem value="10" className="text-foreground">10 {t('stars') || 'Stars'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Delete Question */}
+      <Button
+        variant="destructive"
+        onClick={() => removeQuestion(selectedQuestion.id)}
+        className="w-full"
+      >
+        <Trash2 className="w-4 h-4 mr-2" />
+        {t('deleteQuestion') || 'Delete Question'}
+      </Button>
+    </div>
+  );
+}

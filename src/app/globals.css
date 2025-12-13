@@ -1,26 +1,431 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+/* Custom Font Families */
+/* Note: Effra fonts are only used for Arabic - English uses system fonts for better compatibility */
+@font-face {
+  font-family: 'Effra';
+  src: url('/fonts/Effra-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Effra';
+  src: url('/fonts/Effra-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Effra';
+  src: url('/fonts/Effra-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Effra';
+  src: url('/fonts/Effra-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Effra';
+  src: url('/fonts/Effra-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+/* Handicrafts - Arabic display font for headings */
+@font-face {
+  font-family: 'Handicrafts';
+  src: url('/fonts/TheYearofHandicrafts-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Handicrafts';
+  src: url('/fonts/TheYearofHandicrafts-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Handicrafts';
+  src: url('/fonts/TheYearofHandicrafts-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Handicrafts';
+  src: url('/fonts/TheYearofHandicrafts-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: 'Handicrafts';
+  src: url('/fonts/TheYearofHandicrafts-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Effra', var(--font-geist-sans), system-ui, sans-serif;
+  --font-display: 'Handicrafts', var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Light Mode - Soft, Warm and Eye-Friendly */
+:root {
+  --radius: 0.625rem;
+  /* Soft off-white background - easier on eyes than pure white */
+  --background: #f8f9fc;
+  --foreground: #1e2330;
+  /* Slightly warm card background */
+  --card: #ffffff;
+  --card-foreground: #1e2330;
+  --popover: #ffffff;
+  --popover-foreground: #1e2330;
+  /* Vibrant but not harsh primary - indigo/violet */
+  --primary: #5b5fc7;
+  --primary-foreground: #ffffff;
+  /* Soft gray secondaries */
+  --secondary: #f1f3f9;
+  --secondary-foreground: #3d4663;
+  --muted: #f1f3f9;
+  --muted-foreground: #6b7894;
+  /* Subtle accent with light purple tint */
+  --accent: #eef0ff;
+  --accent-foreground: #1e2330;
+  --destructive: #dc3545;
+  /* Soft borders that don't feel harsh */
+  --border: #e2e5ef;
+  --input: #e2e5ef;
+  --ring: #5b5fc7;
+  /* Chart colors - vibrant but balanced */
+  --chart-1: #5b5fc7;
+  --chart-2: #7c3aed;
+  --chart-3: #db2777;
+  --chart-4: #059669;
+  --chart-5: #d97706;
+  /* Sidebar - slightly darker than main background */
+  --sidebar: #f3f4f8;
+  --sidebar-foreground: #1e2330;
+  --sidebar-primary: #5b5fc7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef0ff;
+  --sidebar-accent-foreground: #1e2330;
+  --sidebar-border: #e2e5ef;
+  --sidebar-ring: #5b5fc7;
+  
+  /* Hero section - always dark for impact */
+  --hero-bg: #0d0f17;
+  --hero-text: #f0f2f8;
+  --hero-muted: #9ca3b8;
+  
+  /* Glow colors */
+  --glow-color: rgba(91, 95, 199, 0.2);
+  --glow-color-intense: rgba(91, 95, 199, 0.4);
+  --selection-color: rgba(91, 95, 199, 0.3);
+}
+
+/* Dark Mode - Rich, Deep and Comfortable */
+.dark {
+  /* Rich dark blue-gray - not pure black */
+  --background: #0d0f17;
+  --foreground: #e8eaf2;
+  /* Elevated card surfaces */
+  --card: #161924;
+  --card-foreground: #e8eaf2;
+  --popover: #1a1d28;
+  --popover-foreground: #e8eaf2;
+  /* Brighter primary for dark mode visibility */
+  --primary: #7c7fff;
+  --primary-foreground: #0d0f17;
+  /* Dark surface variations */
+  --secondary: #1e2230;
+  --secondary-foreground: #e8eaf2;
+  --muted: #1e2230;
+  --muted-foreground: #9ba3bc;
+  /* Darker accent that's still visible */
+  --accent: #252a3a;
+  --accent-foreground: #e8eaf2;
+  --destructive: #f87171;
+  /* Subtle borders that define without being harsh */
+  --border: #2a2f40;
+  --input: #2a2f40;
+  --ring: #7c7fff;
+  /* Chart colors - slightly brighter for dark mode */
+  --chart-1: #7c7fff;
+  --chart-2: #a78bfa;
+  --chart-3: #f472b6;
+  --chart-4: #34d399;
+  --chart-5: #fbbf24;
+  /* Sidebar - slightly darker */
+  --sidebar: #0a0c12;
+  --sidebar-foreground: #e8eaf2;
+  --sidebar-primary: #7c7fff;
+  --sidebar-primary-foreground: #0d0f17;
+  --sidebar-accent: #1e2230;
+  --sidebar-accent-foreground: #e8eaf2;
+  --sidebar-border: #2a2f40;
+  --sidebar-ring: #7c7fff;
+  
+  /* Hero section specific */
+  --hero-bg: #0d0f17;
+  --hero-text: #f0f2f8;
+  --hero-muted: #9ba3bc;
+  
+  /* Glow colors - brighter for dark mode */
+  --glow-color: rgba(124, 127, 255, 0.2);
+  --glow-color-intense: rgba(124, 127, 255, 0.4);
+  --selection-color: rgba(124, 127, 255, 0.3);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  [dir="rtl"] body {
+    font-family: 'Effra', var(--font-geist-sans), system-ui, sans-serif;
+  }
+  [dir="ltr"] body {
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+  }
+  /* RTL Support */
+  [dir="rtl"] {
+    text-align: right;
+  }
+  /* Display font for headings - only apply Handicrafts for Arabic */
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 {
+    font-family: 'Handicrafts', 'Effra', var(--font-geist-sans), system-ui, sans-serif;
+  }
+  [dir="ltr"] h1, [dir="ltr"] h2, [dir="ltr"] h3 {
+    font-family: 'Effra', var(--font-geist-sans), system-ui, sans-serif;
+    font-weight: 700;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Vibe Form custom styles */
+.vibe-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+}
+
+.vibe-gradient-text {
+  background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.vibe-glow {
+  box-shadow: 0 0 40px rgba(91, 95, 199, 0.3);
+}
+
+.dark .vibe-glow {
+  box-shadow: 0 0 40px rgba(124, 127, 255, 0.3);
+}
+
+/* Glass morphism effect for cards */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.dark .glass {
+  background: rgba(22, 25, 36, 0.85);
+  border: 1px solid var(--border);
+}
+
+/* Gradient border */
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6, #ec4899);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px var(--glow-color, rgba(91, 95, 199, 0.2)); }
+  50% { box-shadow: 0 0 40px var(--glow-color-intense, rgba(91, 95, 199, 0.4)); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Smooth transitions for theme switching */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+  background: var(--selection-color, rgba(91, 95, 199, 0.3));
+  color: inherit;
+}
+
+/* Input placeholder styles */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+/* Font utility classes */
+.font-display {
+  font-family: 'Effra', var(--font-geist-sans), system-ui, sans-serif;
+  font-weight: 700;
+}
+
+[dir="rtl"] .font-display {
+  font-family: 'Handicrafts', 'Effra', var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.font-body {
+  font-family: 'Effra', var(--font-geist-sans), system-ui, sans-serif;
 }
