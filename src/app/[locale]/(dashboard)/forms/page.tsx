@@ -45,10 +45,10 @@ export default function FormsPage() {
   // #region agent log
   const formsPageLoadTime = useRef(Date.now());
   useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'forms/page.tsx:45',message:'FormsPage mounted',data:{isAuthLoading,isFormsLoading,formsCount:forms.length,timeSinceLoad:Date.now()-formsPageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    console.log('[DEBUG-B] FormsPage mounted', { isAuthLoading, isFormsLoading, formsCount: forms.length, timeSinceLoad: Date.now() - formsPageLoadTime.current });
   }, []);
   useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'forms/page.tsx:49',message:'FormsPage loading state changed',data:{isAuthLoading,isFormsLoading,formsCount:forms.length,timeSinceLoad:Date.now()-formsPageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    console.log('[DEBUG-B] FormsPage loading state changed', { isAuthLoading, isFormsLoading, formsCount: forms.length, timeSinceLoad: Date.now() - formsPageLoadTime.current });
   }, [isAuthLoading, isFormsLoading, forms.length]);
   // #endregion
 

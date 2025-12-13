@@ -71,7 +71,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
     const fetchForm = async () => {
       // #region agent log
       const builderLoadStart = Date.now();
-      fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'builder/page.tsx:72',message:'Builder page load started',data:{formId:id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+      console.log('[DEBUG-D] Builder page load started', { formId: id });
       // #endregion
       setIsLoading(true);
       
@@ -85,7 +85,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
         .eq('id', id)
         .single();
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'builder/page.tsx:85',message:'Form fetch completed',data:{durationMs:Date.now()-formFetchStart,hasForm:!!formData,error:formError?.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+      console.log('[DEBUG-D] Form fetch completed', { durationMs: Date.now() - formFetchStart, hasForm: !!formData, error: formError?.message });
       // #endregion
 
       if (formError || !formData) {
@@ -104,7 +104,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
         .eq('form_id', id)
         .order('order_index', { ascending: true });
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'builder/page.tsx:103',message:'Questions fetch completed',data:{durationMs:Date.now()-questionsFetchStart,count:questionsData?.length,error:questionsError?.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+      console.log('[DEBUG-D] Questions fetch completed', { durationMs: Date.now() - questionsFetchStart, count: questionsData?.length, error: questionsError?.message });
       // #endregion
 
       if (questionsError) {
@@ -124,7 +124,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       
       setIsLoading(false);
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'builder/page.tsx:122',message:'Builder page load completed',data:{totalDurationMs:Date.now()-builderLoadStart},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+      console.log('[DEBUG-D] Builder page load completed', { totalDurationMs: Date.now() - builderLoadStart });
       // #endregion
     };
 

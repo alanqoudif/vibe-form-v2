@@ -18,10 +18,10 @@ export default function HomePage() {
   // #region agent log
   const pageLoadTime = useRef(Date.now());
   useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:20',message:'HomePage mounted',data:{isAuthLoading,hasUser:!!user,timeSinceLoad:Date.now()-pageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+    console.log('[DEBUG-C] HomePage mounted', { isAuthLoading, hasUser: !!user, timeSinceLoad: Date.now() - pageLoadTime.current });
   }, []);
   useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:24',message:'Auth state changed',data:{isAuthLoading,hasUser:!!user,timeSinceLoad:Date.now()-pageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+    console.log('[DEBUG-C] Auth state changed', { isAuthLoading, hasUser: !!user, timeSinceLoad: Date.now() - pageLoadTime.current });
   }, [isAuthLoading, user]);
   // #endregion
   
