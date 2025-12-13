@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -41,16 +41,6 @@ export default function FormsPage() {
   const { data: forms = [], isLoading: isFormsLoading } = useForms();
   const deleteFormMutation = useDeleteForm();
   const [searchQuery, setSearchQuery] = useState('');
-
-  // #region agent log
-  const formsPageLoadTime = useRef(Date.now());
-  useEffect(() => {
-    console.log('[DEBUG-B] FormsPage mounted', { isAuthLoading, isFormsLoading, formsCount: forms.length, timeSinceLoad: Date.now() - formsPageLoadTime.current });
-  }, []);
-  useEffect(() => {
-    console.log('[DEBUG-B] FormsPage loading state changed', { isAuthLoading, isFormsLoading, formsCount: forms.length, timeSinceLoad: Date.now() - formsPageLoadTime.current });
-  }, [isAuthLoading, isFormsLoading, forms.length]);
-  // #endregion
 
   const isLoading = isAuthLoading || isFormsLoading;
 

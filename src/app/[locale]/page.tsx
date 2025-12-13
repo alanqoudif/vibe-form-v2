@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { HeroWave } from '@/components/ui/ai-input-hero';
@@ -14,16 +14,6 @@ export default function HomePage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // #region agent log
-  const pageLoadTime = useRef(Date.now());
-  useEffect(() => {
-    console.log('[DEBUG-C] HomePage mounted', { isAuthLoading, hasUser: !!user, timeSinceLoad: Date.now() - pageLoadTime.current });
-  }, []);
-  useEffect(() => {
-    console.log('[DEBUG-C] Auth state changed', { isAuthLoading, hasUser: !!user, timeSinceLoad: Date.now() - pageLoadTime.current });
-  }, [isAuthLoading, user]);
-  // #endregion
   
   // Use React Query for fetching forms - much better caching and state management
   const { data: forms = [], isLoading: isLoadingForms } = useForms(6);

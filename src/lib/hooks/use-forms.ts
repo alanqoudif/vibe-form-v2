@@ -28,10 +28,6 @@ export function useForms(limit?: number) {
   return useQuery({
     queryKey: limit ? formKeys.recent(user?.id || '', limit) : formKeys.list(user?.id || ''),
     queryFn: async (): Promise<FormListItem[]> => {
-      // #region agent log
-      const formsQueryStart = Date.now();
-      console.log('[DEBUG-B] useForms queryFn started', { userId: user?.id, limit });
-      // #endregion
       if (!user) return [];
 
       let query = supabase
@@ -53,9 +49,6 @@ export function useForms(limit?: number) {
       }
 
       const { data, error } = await query;
-      // #region agent log
-      console.log('[DEBUG-B] useForms query completed', { durationMs: Date.now() - formsQueryStart, count: data?.length, error: error?.message });
-      // #endregion
 
       if (error) {
         console.error('Error fetching forms:', error);
