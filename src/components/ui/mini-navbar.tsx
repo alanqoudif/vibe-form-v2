@@ -233,8 +233,14 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { user, isLoading } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  const { user, isLoading, isHydrated } = useAuthStore();
   const router = useRouter();
+
+  // Prevent hydration mismatch by only rendering auth-dependent UI after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isHero = variant === 'hero';
   
@@ -328,7 +334,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
             <ThemeToggle />
             <LanguageSelector />
             
-            {!isLoading && (
+            {/* Only show auth UI after client-side hydration to prevent mismatch */}
+            {mounted && isHydrated && !isLoading && (
               <>
                 {user ? (
                   <UserMenu />
@@ -356,6 +363,11 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   </div>
                 )}
               </>
+            )}
+            
+            {/* Show placeholder while loading to prevent layout shift */}
+            {mounted && (!isHydrated || isLoading) && (
+              <div className="hidden sm:block w-[120px] h-10" />
             )}
 
             {/* Mobile Menu Button */}
@@ -431,7 +443,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                 );
               })}
               
-              {!user && (
+              {mounted && isHydrated && !isLoading && !user && (
                 <div className="flex flex-col gap-2.5 pt-4 border-t border-border/50 mt-2">
                   <Link 
                     href="/login"

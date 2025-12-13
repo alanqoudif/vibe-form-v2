@@ -28,7 +28,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, isHydrated } = useAuth();
   const supabase = createClient();
   const router = useRouter();
   
@@ -90,7 +90,8 @@ export default function SettingsPage() {
     }
   };
 
-  if (isAuthLoading) {
+  // Wait for hydration before showing content
+  if (!isHydrated || isAuthLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />

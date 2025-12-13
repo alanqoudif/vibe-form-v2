@@ -1,117 +1,137 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Profile } from '@/types/database';
 import { createClient } from '@/lib/supabase/client';
 
 interface AuthState {
   user: Profile | null;
   isLoading: boolean;
+  isHydrated: boolean;
   setUser: (user: Profile | null) => void;
   setLoading: (loading: boolean) => void;
+  setHydrated: (hydrated: boolean) => void;
   clearAuth: () => void;
 }
 
-const bootstrapAuth = (() => {
-  let initialized = false;
-  let supabaseClient: ReturnType<typeof createClient> | null = null;
+// Track if bootstrap has been called
+let bootstrapInitialized = false;
+let supabaseClient: ReturnType<typeof createClient> | null = null;
 
-  return () => {
-    if (initialized || typeof window === 'undefined') return;
-    initialized = true;
-
-    if (!supabaseClient) {
-      supabaseClient = createClient();
-    }
-
-    const supabase = supabaseClient;
-    const refreshSession = async () => {
-      const { setUser, setLoading, user: cachedUser } = useAuthStore.getState();
-      
-      // If we have a cached user, don't show loading - use optimistic approach
-      if (!cachedUser) {
-        setLoading(true);
-      } else {
-        setLoading(false);
-      }
-      
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profile && !error) {
-            setUser(profile);
-          } else {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Auth refresh error:', error);
-        setUser(null);
-      }
-    };
-
-    refreshSession();
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      const { setUser, clearAuth } = useAuthStore.getState();
-
-      if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          setUser(profile);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        clearAuth();
-      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          setUser(profile);
-        }
-      }
-    });
-  };
-})();
+const getSupabaseClient = () => {
+  if (!supabaseClient) {
+    supabaseClient = createClient();
+  }
+  return supabaseClient;
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
       isLoading: true,
+      isHydrated: false,
       setUser: (user) => set({ user, isLoading: false }),
       setLoading: (isLoading) => set({ isLoading }),
+      setHydrated: (isHydrated) => set({ isHydrated }),
       clearAuth: () => set({ user: null, isLoading: false }),
     }),
     {
       name: 'vibe-auth',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ user: state.user }),
+      onRehydrateStorage: () => {
+        return (state, error) => {
+          if (error) {
+            console.error('Auth hydration error:', error);
+          }
+          // After hydration from localStorage, validate with Supabase
+          if (typeof window !== 'undefined') {
+            // Use setTimeout to ensure store is fully initialized
+            setTimeout(() => bootstrapAuth(), 0);
+          }
+        };
+      },
     }
   )
 );
 
+// Bootstrap auth - validates session and syncs with Supabase
+const bootstrapAuth = async () => {
+  if (bootstrapInitialized || typeof window === 'undefined') return;
+  bootstrapInitialized = true;
+
+  const supabase = getSupabaseClient();
+  const { setUser, setLoading, setHydrated } = useAuthStore.getState();
+
+  try {
+    // Get current session from Supabase (validates against server)
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      // Fetch fresh profile data
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile && !error) {
+        setUser(profile);
+      } else {
+        // Session exists but profile doesn't - clear auth
+        setUser(null);
+      }
+    } else {
+      // No valid session - clear any cached user
+      setUser(null);
+    }
+  } catch (error) {
+    console.error('Auth bootstrap error:', error);
+    setUser(null);
+  } finally {
+    setLoading(false);
+    setHydrated(true);
+  }
+
+  // Listen for auth state changes
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    const { setUser, clearAuth } = useAuthStore.getState();
+
+    if (event === 'SIGNED_IN' && session?.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile) {
+        setUser(profile);
+      }
+    } else if (event === 'SIGNED_OUT') {
+      clearAuth();
+    } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+      // Optionally refresh profile on token refresh
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile) {
+        setUser(profile);
+      }
+    }
+  });
+};
+
+// For SSR safety - ensure store is initialized on client
 if (typeof window !== 'undefined') {
-  bootstrapAuth();
+  // Subscribe to store to trigger hydration
+  useAuthStore.persist.rehydrate();
 }
 
 

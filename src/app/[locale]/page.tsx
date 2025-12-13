@@ -12,8 +12,14 @@ import { toast } from 'sonner';
 export default function HomePage() {
   const t = useTranslations('hero');
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, isHydrated } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  // Track client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Use React Query for fetching forms - much better caching and state management
   const { data: forms = [], isLoading: isLoadingForms } = useForms(6);
@@ -85,6 +91,11 @@ export default function HomePage() {
     t('suggestions.finance'),
   ];
 
+  // Determine if we should show user content (only after hydration)
+  const showUserContent = mounted && isHydrated && !isAuthLoading;
+  const showUserForms = showUserContent && user;
+  const showFeatures = showUserContent && !user;
+
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -98,16 +109,16 @@ export default function HomePage() {
         suggestions={suggestions}
       />
       
-      {/* My Forms Section - only show if user is logged in */}
-      {user && (
+      {/* My Forms Section - only show if user is logged in and hydrated */}
+      {showUserForms && (
         <MyFormsSection 
           forms={forms} 
-          isLoading={isAuthLoading || isLoadingForms}
+          isLoading={isLoadingForms}
         />
       )}
       
       {/* Features Section for non-logged in users */}
-      {!user && !isAuthLoading && (
+      {showFeatures && (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-muted/30">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">

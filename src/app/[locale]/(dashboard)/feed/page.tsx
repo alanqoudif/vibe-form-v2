@@ -28,9 +28,13 @@ interface FeedForm extends Form {
 
 export default function FeedPage() {
   const t = useTranslations('feed');
-  const { user } = useAuth();
-  const { data: forms = [], isLoading } = usePublicForms(user?.id);
+  const { user, isHydrated } = useAuth();
+  // Only pass user id after hydration to exclude their forms
+  const { data: forms = [], isLoading: isFormsLoading } = usePublicForms(isHydrated ? user?.id : undefined);
   const [activeTab, setActiveTab] = useState('needs');
+  
+  // Wait for hydration before showing content
+  const isLoading = !isHydrated || isFormsLoading;
 
   const getEstimatedTime = () => {
     // Rough estimate: 1-2 minutes per question

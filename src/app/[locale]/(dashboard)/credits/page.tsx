@@ -27,10 +27,10 @@ interface LedgerEntry extends CreditsLedger {
 
 export default function CreditsPage() {
   const t = useTranslations('credits');
-  const { user } = useAuth();
+  const { user, isHydrated, isLoading: isAuthLoading } = useAuth();
   const supabase = createClient();
 
-  const { data: ledger = [], isLoading } = useQuery({
+  const { data: ledger = [], isLoading: isLedgerLoading } = useQuery({
     queryKey: ['credits-ledger', user?.id],
     queryFn: async (): Promise<LedgerEntry[]> => {
       if (!user) return [];
@@ -56,9 +56,12 @@ export default function CreditsPage() {
         forms: undefined,
       })) as LedgerEntry[];
     },
-    enabled: !!user,
+    enabled: !!user && isHydrated,
     staleTime: 30 * 1000,
   });
+  
+  // Wait for hydration before showing content
+  const isLoading = !isHydrated || isAuthLoading || isLedgerLoading;
 
   const getReasonLabel = (reason: string) => {
     const labels: Record<string, string> = {
@@ -82,6 +85,23 @@ export default function CreditsPage() {
 
   const totalEarned = ledger.filter(e => e.amount > 0).reduce((sum, e) => sum + e.amount, 0);
   const totalSpent = Math.abs(ledger.filter(e => e.amount < 0).reduce((sum, e) => sum + e.amount, 0));
+
+  // Show skeleton while loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <Skeleton className="h-40 w-full mb-8" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </div>
+          <Skeleton className="h-96" />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

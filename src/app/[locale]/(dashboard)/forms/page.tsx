@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -37,12 +37,13 @@ import { Navbar } from '@/components/ui/mini-navbar';
 
 export default function FormsPage() {
   const t = useTranslations('myForms');
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, isHydrated } = useAuth();
   const { data: forms = [], isLoading: isFormsLoading } = useForms();
   const deleteFormMutation = useDeleteForm();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const isLoading = isAuthLoading || isFormsLoading;
+  // Wait for hydration before showing content
+  const isLoading = !isHydrated || isAuthLoading || isFormsLoading;
 
   const handleDelete = async (formId: string) => {
     if (!confirm(t('confirmDelete') || 'Are you sure you want to delete this form? This action cannot be undone.')) {
