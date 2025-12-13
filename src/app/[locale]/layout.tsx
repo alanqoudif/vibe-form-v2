@@ -5,6 +5,7 @@ import { routing } from '@/i18n/routing';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { AuthProvider } from '@/components/providers/auth-provider';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -40,12 +41,14 @@ export default async function LocaleLayout({
       disableTransitionOnChange={false}
     >
       <QueryProvider>
-        <NextIntlClientProvider messages={messages}>
-          <div lang={locale} dir={isRTL ? 'rtl' : 'ltr'}>
-            {children}
-          </div>
-          <Toaster position={isRTL ? 'bottom-left' : 'bottom-right'} />
-        </NextIntlClientProvider>
+        <AuthProvider>
+          <NextIntlClientProvider messages={messages}>
+            <div lang={locale} dir={isRTL ? 'rtl' : 'ltr'}>
+              {children}
+            </div>
+            <Toaster position={isRTL ? 'bottom-left' : 'bottom-right'} />
+          </NextIntlClientProvider>
+        </AuthProvider>
       </QueryProvider>
     </ThemeProvider>
   );
