@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -41,6 +41,16 @@ export default function FormsPage() {
   const { data: forms = [], isLoading: isFormsLoading } = useForms();
   const deleteFormMutation = useDeleteForm();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // #region agent log
+  const formsPageLoadTime = useRef(Date.now());
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'forms/page.tsx:45',message:'FormsPage mounted',data:{isAuthLoading,isFormsLoading,formsCount:forms.length,timeSinceLoad:Date.now()-formsPageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+  }, []);
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'forms/page.tsx:49',message:'FormsPage loading state changed',data:{isAuthLoading,isFormsLoading,formsCount:forms.length,timeSinceLoad:Date.now()-formsPageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+  }, [isAuthLoading, isFormsLoading, forms.length]);
+  // #endregion
 
   const isLoading = isAuthLoading || isFormsLoading;
 

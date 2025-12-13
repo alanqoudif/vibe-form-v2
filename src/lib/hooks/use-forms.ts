@@ -28,6 +28,10 @@ export function useForms(limit?: number) {
   return useQuery({
     queryKey: limit ? formKeys.recent(user?.id || '', limit) : formKeys.list(user?.id || ''),
     queryFn: async (): Promise<FormListItem[]> => {
+      // #region agent log
+      const formsQueryStart = Date.now();
+      fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'use-forms.ts:32',message:'useForms queryFn started',data:{userId:user?.id,limit},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       if (!user) return [];
 
       let query = supabase
@@ -49,6 +53,9 @@ export function useForms(limit?: number) {
       }
 
       const { data, error } = await query;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'use-forms.ts:55',message:'useForms query completed',data:{durationMs:Date.now()-formsQueryStart,count:data?.length,error:error?.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
 
       if (error) {
         console.error('Error fetching forms:', error);

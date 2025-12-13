@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { HeroWave } from '@/components/ui/ai-input-hero';
@@ -14,6 +14,16 @@ export default function HomePage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // #region agent log
+  const pageLoadTime = useRef(Date.now());
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:20',message:'HomePage mounted',data:{isAuthLoading,hasUser:!!user,timeSinceLoad:Date.now()-pageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+  }, []);
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/f729f3fd-3ac6-4ec8-b356-dbb76d0e8cdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:24',message:'Auth state changed',data:{isAuthLoading,hasUser:!!user,timeSinceLoad:Date.now()-pageLoadTime.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+  }, [isAuthLoading, user]);
+  // #endregion
   
   // Use React Query for fetching forms - much better caching and state management
   const { data: forms = [], isLoading: isLoadingForms } = useForms(6);
