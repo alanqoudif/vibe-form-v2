@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Sparkles, Bot, Layout, Loader2, CheckCircle2 } from 'lucide-react';
 
-export default function BuildingPage() {
+function BuildingPageContent() {
     const searchParams = useSearchParams();
     const prompt = searchParams.get('prompt');
     const router = useRouter();
@@ -136,5 +136,28 @@ export default function BuildingPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function BuildingPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+                <div className="max-w-md w-full relative z-10 glass rounded-3xl p-8 border border-white/20 shadow-2xl">
+                    <div className="flex flex-col items-center text-center space-y-8">
+                        <div className="w-20 h-20 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+                            <Bot className="w-10 h-10 text-white" />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                                Loading...
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }>
+            <BuildingPageContent />
+        </Suspense>
     );
 }
