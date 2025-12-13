@@ -28,7 +28,15 @@ export function useForms(limit?: number) {
 
       let query = supabase
         .from('forms')
-        .select(`*, responses(count)`)
+        .select(`
+          id,
+          title,
+          description,
+          status,
+          visibility,
+          created_at,
+          responses(count)
+        `)
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
 
