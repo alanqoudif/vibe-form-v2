@@ -18,7 +18,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as 'en' | 'ar')) {
     notFound();
@@ -36,12 +36,13 @@ export default async function LocaleLayout({
     <ThemeProvider
       attribute="class"
       defaultTheme="dark"
-      enableSystem
+      enableSystem={false}
+      forcedTheme="dark"
       disableTransitionOnChange={false}
     >
       <QueryProvider>
         <NextIntlClientProvider messages={messages}>
-          <div lang={locale} dir={isRTL ? 'rtl' : 'ltr'}>
+          <div lang={locale} dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen flex flex-col">
             {children}
           </div>
           <Toaster position={isRTL ? 'bottom-left' : 'bottom-right'} />

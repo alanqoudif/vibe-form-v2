@@ -6,18 +6,20 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useFormStore } from '@/lib/stores/form-store';
+import { useQueryClient } from '@tanstack/react-query';
 import { QuestionList } from '@/components/forms/question-list';
 import { QuestionEditor } from '@/components/forms/question-editor';
 import { FormPreview } from '@/components/forms/form-preview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { 
-  ArrowLeft, 
-  Save, 
-  Eye, 
-  Send, 
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  Send,
   Loader2,
   Palette,
   LayoutGrid,
@@ -26,6 +28,8 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Globe,
+  Link as LinkIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import type { Form, FormQuestion, Json } from '@/types/database';
@@ -39,24 +43,42 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 export default function FormBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const t = useTranslations('builder');
   const router = useRouter();
   const supabase = createClient();
-  
-  const { 
-    form, 
-    questions, 
+  const queryClient = useQueryClient();
+
+  const {
+    form,
+    questions,
     isDirty,
-    setForm, 
-    setQuestions, 
+    setForm,
+    setQuestions,
     updateForm,
     setDirty,
-    reset 
+    reset
   } = useFormStore();
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -65,12 +87,14 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [showSaved, setShowSaved] = useState(false);
+  const [showMarketplaceDialog, setShowMarketplaceDialog] = useState(false);
+  const [targetResponses, setTargetResponses] = useState<number>(10);
 
   // Fetch form and questions
   useEffect(() => {
     const fetchForm = async () => {
       setIsLoading(true);
-      
+
       // Fetch form
       const { data: formData, error: formError } = await supabase
         .from('forms')
@@ -97,7 +121,12 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
       setForm(formData as Form);
       setQuestions((questionsData || []) as FormQuestion[]);
-      
+
+      // Load target responses if exists
+      if (formData.target_responses) {
+        setTargetResponses(formData.target_responses);
+      }
+
       // Load theme from form settings
       if (formData.settings && typeof formData.settings === 'object') {
         const settings = formData.settings as { theme?: FormTheme };
@@ -105,7 +134,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           setTheme(settings.theme);
         }
       }
-      
+
       setIsLoading(false);
     };
 
@@ -119,15 +148,15 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   // Save form
   const handleSave = async () => {
     if (!form) return;
-    
+
     setIsSaving(true);
 
     try {
       // Update form with theme in settings
-      const currentSettings = (form.settings && typeof form.settings === 'object') 
+      const currentSettings = (form.settings && typeof form.settings === 'object')
         ? form.settings as Record<string, unknown>
         : {};
-      
+
       const { error: formError } = await supabase
         .from('forms')
         .update({
@@ -143,7 +172,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
       // Delete existing questions and insert new ones
       await supabase.from('form_questions').delete().eq('form_id', id);
-      
+
       if (questions.length > 0) {
         const questionsToInsert = questions.map((q, index) => ({
           form_id: id,
@@ -176,15 +205,15 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   };
 
   // Publish form
-  const handlePublish = async () => {
+  const handlePublish = async (visibility: 'public' | 'unlisted' = 'public', targetResponses?: number) => {
     if (!form) return;
-    
+
     // Validate
     if (!form.title?.trim()) {
       toast.error(t('addTitle') || 'Please add a title to your form');
       return;
     }
-    
+
     if (questions.length === 0) {
       toast.error(t('addQuestion') || 'Please add at least one question');
       return;
@@ -199,25 +228,98 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       }
 
       // Update status to published
-      const { error } = await supabase
+      const updateData: {
+        status: 'published';
+        visibility: 'public' | 'unlisted';
+        published_at: string;
+        updated_at: string;
+        target_responses?: number | null;
+      } = {
+        status: 'published',
+        visibility: visibility,
+        published_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Add target_responses if publishing to marketplace
+      if (visibility === 'public') {
+        const validTargetResponses = targetResponses && !isNaN(targetResponses) && targetResponses > 0 
+          ? targetResponses 
+          : undefined;
+        
+        if (validTargetResponses) {
+          updateData.target_responses = validTargetResponses;
+        } else if (form.target_responses) {
+          // Keep existing target_responses if not specified
+          updateData.target_responses = form.target_responses;
+        } else {
+          // Set default target_responses if not specified and doesn't exist
+          updateData.target_responses = null;
+        }
+      }
+
+      console.log('Publishing form with data:', { id, updateData, currentForm: form });
+
+      const { error, data } = await supabase
         .from('forms')
-        .update({
-          status: 'published',
-          published_at: new Date().toISOString(),
-        })
-        .eq('id', id);
+        .update(updateData)
+        .eq('id', id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error publishing form:', error);
+        throw error;
+      }
 
-      updateForm({ status: 'published' });
-      toast.success(t('publishSuccess') || 'Form published successfully!');
+      console.log('Form published successfully:', data);
+      
+      // Verify the update was successful
+      if (data && data.length > 0) {
+        const updatedForm = data[0];
+        console.log('Updated form details:', {
+          id: updatedForm.id,
+          status: updatedForm.status,
+          visibility: updatedForm.visibility,
+          target_responses: updatedForm.target_responses,
+        });
+        
+        // Check if visibility was actually updated
+        if (updatedForm.visibility !== visibility) {
+          console.error('WARNING: Visibility was not updated correctly!', {
+            expected: visibility,
+            actual: updatedForm.visibility,
+          });
+        }
+      }
+
+      // Invalidate queries to refresh feed and forms list
+      queryClient.invalidateQueries({ queryKey: ['public-forms'] });
+      queryClient.invalidateQueries({ queryKey: ['forms'] });
+
+      updateForm({ 
+        status: 'published', 
+        visibility, 
+        target_responses: updateData.target_responses 
+      });
+      
+      if (visibility === 'public') {
+        toast.success(t('publishedToMarketplace') || 'Form published to marketplace successfully!');
+      } else {
+        toast.success(t('publishSuccess') || 'Form published successfully!');
+      }
+      
       router.push(`/forms/${id}/analytics`);
     } catch (error) {
       console.error('Error publishing form:', error);
       toast.error(t('publishError') || 'Failed to publish form');
     } finally {
       setIsPublishing(false);
+      setShowMarketplaceDialog(false);
     }
+  };
+
+  const handlePublishToMarketplace = () => {
+    setShowMarketplaceDialog(true);
   };
 
   const handleCopyLink = () => {
@@ -252,48 +354,49 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col w-full max-w-[100vw] overflow-x-hidden">
         {/* Header - Simplified */}
-        <header className="h-14 border-b border-border flex items-center px-4 gap-3 bg-card/50 backdrop-blur-xl shrink-0 sticky top-0 z-20">
-          {/* Back Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href="/forms">
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>{t('backToForms') || 'Back to forms'}</p>
-            </TooltipContent>
-          </Tooltip>
+        <header className="border-b border-border bg-card/50 backdrop-blur-xl shrink-0 sticky top-0 z-20">
+          <div className="flex items-center px-4 gap-3 h-14">
+            {/* Back Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/forms">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{t('backToForms') || 'Back to forms'}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <div className="h-8 w-px bg-border" />
+            <div className="h-8 w-px bg-border" />
 
-          {/* Logo and Title */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
-              <Image
-                src="/fonts/vibe form logo.png"
-                alt="Vibe Form Logo"
-                width={32}
-                height={32}
-                className="object-contain"
+            {/* Logo and Title */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                <Image
+                  src="/fonts/vibe form logo.png"
+                  alt="Vibe Form Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
+              </div>
+              <Input
+                value={form?.title || ''}
+                onChange={(e) => updateForm({ title: e.target.value })}
+                placeholder={t('untitledForm') || 'Untitled Form'}
+                className="bg-transparent border-none shadow-none text-foreground font-medium placeholder:text-muted-foreground focus-visible:ring-0 max-w-md"
               />
+              {form?.status === 'published' && (
+                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                  {t('published')}
+                </span>
+              )}
             </div>
-            <Input
-              value={form?.title || ''}
-              onChange={(e) => updateForm({ title: e.target.value })}
-              placeholder={t('untitledForm') || 'Untitled Form'}
-              className="bg-transparent border-none shadow-none text-foreground font-medium placeholder:text-muted-foreground focus-visible:ring-0 max-w-md"
-            />
-            {form?.status === 'published' && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
-                {t('published')}
-              </span>
-            )}
-          </div>
 
           {/* Actions - Grouped */}
           <div className="flex items-center gap-2">
@@ -319,12 +422,12 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                   </SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
-                  <ThemePicker 
-                    theme={theme} 
+                  <ThemePicker
+                    theme={theme}
                     onChange={(newTheme) => {
                       setTheme(newTheme);
                       setDirty(true);
-                    }} 
+                    }}
                   />
                 </div>
               </SheetContent>
@@ -395,21 +498,42 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                 <p>{showSaved ? (t('saved') || 'Saved') : (t('save') || 'Save')}</p>
               </TooltipContent>
             </Tooltip>
-            
-            {/* Publish Button */}
-            <Button
-              onClick={handlePublish}
-              disabled={isPublishing}
-              size="sm"
-              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground gap-2"
-            >
-              {isPublishing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline">{t('publish')}</span>
-            </Button>
+
+            {/* Publish Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={isPublishing}
+                  size="sm"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground gap-2"
+                >
+                  {isPublishing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">{t('publish')}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>{t('publishOptions') || 'Publishing Options'}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handlePublishToMarketplace} className="cursor-pointer">
+                  <Globe className="w-4 h-4 mr-2 text-primary" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{t('publishToMarketplace') || 'Publish to Marketplace'}</span>
+                    <span className="text-xs text-muted-foreground">{t('getResponsesFromInterested') || 'Get responses from interested users'}</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePublish('unlisted')} className="cursor-pointer">
+                  <LinkIcon className="w-4 h-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>{t('shareLink') || 'Share via Link'}</span>
+                    <span className="text-xs text-muted-foreground">{t('onlyPeopleWithLink') || 'Only people with link'}</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* More Options for published forms */}
             {form?.status === 'published' && (
@@ -440,50 +564,61 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               </>
             )}
           </div>
-        </header>
+        </div>
+
+        {/* Description Field */}
+        <div className="px-4 pb-3 border-t border-border/50 pt-2">
+          <Textarea
+            value={form?.description || ''}
+            onChange={(e) => updateForm({ description: e.target.value })}
+            placeholder={t('formDescriptionPlaceholder') || 'Add a description for your form (optional)...'}
+            className="bg-muted/50 border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus-visible:ring-1 focus-visible:ring-ring/50 min-h-[60px] max-h-[100px] text-sm"
+            rows={2}
+          />
+        </div>
+      </header>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {activeTab === 'edit' ? (
             <>
               {/* Question List Sidebar */}
-              <aside className="w-80 border-r border-border flex-shrink-0 overflow-hidden bg-card/30">
-                <div className="h-full flex flex-col">
-                  <div className="p-4 border-b border-border">
-                    <h2 className="font-semibold text-foreground flex items-center gap-2">
-                      <LayoutGrid className="w-4 h-4" />
-                      {t('questions') || 'Questions'}
-                      <span className="ml-auto text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                        {questions.length}
-                      </span>
-                    </h2>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <QuestionList />
-                  </div>
+              <aside className="w-80 border-e border-border/50 flex-shrink-0 bg-card/30 backdrop-blur-sm flex flex-col">
+                <div className="p-4 border-b border-border/50 shrink-0">
+                  <h2 className="font-semibold text-foreground flex items-center gap-2 font-display">
+                    <LayoutGrid className="w-4 h-4" />
+                    {t('questions') || 'Questions'}
+                    <span className="ml-auto text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {questions.length}
+                    </span>
+                  </h2>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <QuestionList />
                 </div>
               </aside>
 
               {/* Question Editor */}
-              <main className="flex-1 overflow-hidden bg-muted/30">
+              <main className="flex-1 overflow-hidden bg-muted/20 relative">
+                <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
                 <QuestionEditor />
               </main>
 
               {/* Mini Preview */}
-              <aside className="w-[420px] border-l border-border flex-shrink-0 overflow-hidden hidden xl:flex flex-col bg-card/30">
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <h2 className="font-semibold text-foreground flex items-center gap-2">
+              <aside className="w-[420px] border-s border-border/50 flex-shrink-0 overflow-hidden hidden xl:flex flex-col bg-card/30 backdrop-blur-sm">
+                <div className="p-4 border-b border-border/50 flex items-center justify-between">
+                  <h2 className="font-semibold text-foreground flex items-center gap-2 font-display">
                     <Eye className="w-4 h-4" />
                     {t('livePreview') || 'Live Preview'}
                   </h2>
-                  <div className="flex items-center rounded-md border border-border p-0.5">
+                  <div className="flex items-center rounded-lg border border-border/50 bg-muted/50 p-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setPreviewMode('desktop')}
                       className={cn(
-                        "h-6 w-6 p-0",
-                        previewMode === 'desktop' ? "bg-muted" : ""
+                        "h-6 w-6 p-0 rounded-md transition-all",
+                        previewMode === 'desktop' ? "bg-background shadow-sm" : "hover:bg-background/50"
                       )}
                     >
                       <Monitor className="w-3.5 h-3.5" />
@@ -556,6 +691,85 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
       </div>
+
+      {/* Marketplace Publish Dialog */}
+      <Dialog open={showMarketplaceDialog} onOpenChange={setShowMarketplaceDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-primary" />
+              {t('publishToMarketplace') || 'Publish to Marketplace'}
+            </DialogTitle>
+            <DialogDescription>
+              {t('marketplaceDescription') || 'Your form will be visible to all users in the marketplace. Set how many responses you want to collect.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="target-responses" className="text-sm font-medium">
+                {t('targetResponses') || 'Target Responses'}
+              </Label>
+              <Input
+                id="target-responses"
+                type="number"
+                min="1"
+                max="1000"
+                value={targetResponses}
+                onChange={(e) => setTargetResponses(Math.max(1, parseInt(e.target.value) || 1))}
+                placeholder="10"
+                className="h-11"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('targetResponsesHint') || 'How many responses do you want to collect? (optional)'}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">
+                    {t('marketplaceBenefits') || 'Marketplace Benefits'}
+                  </p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    <li>• {t('visibleToAllUsers') || 'Visible to all interested users'}</li>
+                    <li>• {t('getQualityResponses') || 'Get quality responses from engaged users'}</li>
+                    <li>• {t('trackProgress') || 'Track your progress towards target responses'}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowMarketplaceDialog(false)}
+              disabled={isPublishing}
+            >
+              {t('cancel') || 'Cancel'}
+            </Button>
+            <Button
+              onClick={() => handlePublish('public', targetResponses)}
+              disabled={isPublishing}
+              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('publishing') || 'Publishing...'}
+                </>
+              ) : (
+                <>
+                  <Globe className="w-4 h-4 mr-2" />
+                  {t('publishToMarketplace') || 'Publish to Marketplace'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }

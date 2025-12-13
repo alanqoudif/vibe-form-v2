@@ -138,11 +138,37 @@ export function usePublicForms(excludeUserId?: string) {
         query = query.neq('owner_id', excludeUserId);
       }
 
+      console.log('Fetching public forms with filters:', {
+        status: 'published',
+        visibility: 'public',
+        excludeUserId,
+      });
+
       const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching public forms:', error);
         throw error;
+      }
+
+      console.log('Fetched public forms:', data?.length || 0, 'forms');
+      if (data && data.length > 0) {
+        console.log('Sample form:', {
+          id: data[0].id,
+          title: data[0].title,
+          status: data[0].status,
+          visibility: data[0].visibility,
+        });
+        // Log all forms for debugging
+        console.log('All fetched forms:', data.map(f => ({
+          id: f.id,
+          title: f.title,
+          status: f.status,
+          visibility: f.visibility,
+          owner_id: f.owner_id,
+        })));
+      } else {
+        console.warn('No public forms found! This might indicate a problem with the query or data.');
       }
 
       return (data || []).map(form => ({

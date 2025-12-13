@@ -15,12 +15,12 @@ export default function HomePage() {
   const { user, isLoading: isAuthLoading, isHydrated } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
+
   // Track client-side mount
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   // Use React Query for fetching forms - much better caching and state management
   const { data: forms = [], isLoading: isLoadingForms } = useForms(6);
 
@@ -28,7 +28,7 @@ export default function HomePage() {
   useEffect(() => {
     const checkPendingPrompt = async () => {
       if (!user) return;
-      
+
       const pendingPrompt = sessionStorage.getItem('pendingPrompt');
       if (pendingPrompt) {
         sessionStorage.removeItem('pendingPrompt');
@@ -52,33 +52,8 @@ export default function HomePage() {
       return;
     }
 
-    setIsGenerating(true);
-
-    try {
-      // Call the API to generate the form
-      const response = await fetch('/api/ai/generate-form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to generate form');
-      }
-
-      const { formId, redirectUrl } = await response.json();
-      
-      toast.success(t('formCreated') || 'Form created successfully!');
-      router.push(redirectUrl || `/forms/${formId}/builder`);
-    } catch (error) {
-      console.error('Error generating form:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to generate form');
-    } finally {
-      setIsGenerating(false);
-    }
+    // Redirect to the AI builder animation page
+    router.push(`/building?prompt=${encodeURIComponent(prompt)}`);
   };
 
   const suggestions = [
@@ -108,15 +83,15 @@ export default function HomePage() {
         isLoading={isGenerating}
         suggestions={suggestions}
       />
-      
+
       {/* My Forms Section - only show if user is logged in and hydrated */}
       {showUserForms && (
-        <MyFormsSection 
-          forms={forms} 
+        <MyFormsSection
+          forms={forms}
           isLoading={isLoadingForms}
         />
       )}
-      
+
       {/* Features Section for non-logged in users */}
       {showFeatures && (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-muted/30">
@@ -129,7 +104,7 @@ export default function HomePage() {
                 {t('whyVibeFormDescription') || 'Create professional surveys in seconds, get quality responses from our community, and gain AI-powered insights.'}
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FeatureCard
                 icon="✨"

@@ -76,7 +76,7 @@ function SortableQuestion({ question, index, isSelected, onClick }: SortableQues
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all",
+        "group flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all",
         isSelected 
           ? "bg-primary/10 border-primary/50" 
           : "bg-card border-border hover:bg-accent",
@@ -87,29 +87,40 @@ function SortableQuestion({ question, index, isSelected, onClick }: SortableQues
       <button
         {...attributes}
         {...listeners}
-        className="touch-none text-muted-foreground hover:text-foreground"
+        className="touch-none text-muted-foreground hover:text-foreground shrink-0 mt-0.5"
       >
         <GripVertical className="w-4 h-4" />
       </button>
       
-      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted flex items-center justify-center mt-0.5">
         <Icon className="w-4 h-4 text-muted-foreground" />
       </div>
       
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-foreground truncate">
+        <p 
+          className="text-sm text-foreground break-words leading-relaxed"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word'
+          }}
+        >
           {question.title || `${t('question') || 'Question'} ${index + 1}`}
         </p>
-        <p className="text-xs text-muted-foreground capitalize">
-          {question.type.replace('_', ' ')}
-        </p>
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <p className="text-xs text-muted-foreground capitalize shrink-0">
+            {question.type.replace('_', ' ')}
+          </p>
+          {question.required && (
+            <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/30 shrink-0">
+              {t('required')}
+            </Badge>
+          )}
+        </div>
       </div>
-
-      {question.required && (
-        <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/30">
-          {t('required')}
-        </Badge>
-      )}
     </div>
   );
 }
@@ -153,8 +164,8 @@ export function QuestionList() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-border">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="p-4 border-b border-border shrink-0">
         <Button
           onClick={handleAddQuestion}
           className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground"
@@ -164,37 +175,39 @@ export function QuestionList() {
         </Button>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-2">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={questions.map(q => q.id)}
-              strategy={verticalListSortingStrategy}
+      <div className="flex-1 min-h-0 relative">
+        <ScrollArea className="absolute inset-0">
+          <div className="p-4 space-y-2">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              {questions.map((question, index) => (
-                <SortableQuestion
-                  key={question.id}
-                  question={question}
-                  index={index}
-                  isSelected={selectedQuestionId === question.id}
-                  onClick={() => selectQuestion(question.id)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={questions.map(q => q.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {questions.map((question, index) => (
+                  <SortableQuestion
+                    key={question.id}
+                    question={question}
+                    index={index}
+                    isSelected={selectedQuestionId === question.id}
+                    onClick={() => selectQuestion(question.id)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
 
-          {questions.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">{t('noQuestions') || 'No questions yet'}</p>
-              <p className="text-xs mt-1">{t('clickToAdd') || 'Click the button above to add one'}</p>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            {questions.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">{t('noQuestions') || 'No questions yet'}</p>
+                <p className="text-xs mt-1">{t('clickToAdd') || 'Click the button above to add one'}</p>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

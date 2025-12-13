@@ -1,22 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname, useRouter as useIntlRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { Sun, Moon, Globe, ChevronDown, Menu, X, LogOut, User, Settings, CreditCard } from 'lucide-react';
+import { Globe, ChevronDown, Menu, X, LogOut, User, Settings, CreditCard } from 'lucide-react';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,56 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const t = useTranslations('nav');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <div className="w-10 h-10" />;
-  }
-
-  const isDark = resolvedTheme === 'dark';
-
-  return (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className={cn(
-              "relative p-2.5 rounded-xl transition-all duration-300",
-              "text-muted-foreground hover:text-foreground",
-              "hover:bg-muted/80 active:scale-95",
-              "border border-transparent hover:border-border/50",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            )}
-            aria-label={isDark ? (t('lightMode') || 'Switch to light mode') : (t('darkMode') || 'Switch to dark mode')}
-          >
-            <div className="relative w-5 h-5">
-              <Sun className={cn(
-                "absolute inset-0 w-5 h-5 transition-all duration-300",
-                isDark ? "opacity-0 rotate-90 scale-0" : "opacity-100 rotate-0 scale-100"
-              )} />
-              <Moon className={cn(
-                "absolute inset-0 w-5 h-5 transition-all duration-300",
-                isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-0"
-              )} />
-            </div>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-popover border-border text-xs">
-          <p>{isDark ? (t('lightMode') || 'Light mode') : (t('darkMode') || 'Dark mode')}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
 
 function LanguageSelector() {
   const locale = useLocale();
@@ -233,14 +176,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { user, isLoading, isHydrated } = useAuthStore();
   const router = useRouter();
-
-  // Prevent hydration mismatch by only rendering auth-dependent UI after mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const isHero = variant === 'hero';
   
@@ -331,11 +268,10 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <LanguageSelector />
             
             {/* Only show auth UI after client-side hydration to prevent mismatch */}
-            {mounted && isHydrated && !isLoading && (
+            {isHydrated && !isLoading && (
               <>
                 {user ? (
                   <UserMenu />
@@ -366,7 +302,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
             )}
             
             {/* Show placeholder while loading to prevent layout shift */}
-            {mounted && (!isHydrated || isLoading) && (
+            {(!isHydrated || isLoading) && (
               <div className="hidden sm:block w-[120px] h-10" />
             )}
 
@@ -443,7 +379,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                 );
               })}
               
-              {mounted && isHydrated && !isLoading && !user && (
+              {isHydrated && !isLoading && !user && (
                 <div className="flex flex-col gap-2.5 pt-4 border-t border-border/50 mt-2">
                   <Link 
                     href="/login"
