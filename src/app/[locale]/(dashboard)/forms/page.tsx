@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { Navbar } from '@/components/ui/mini-navbar';
+import { BoostDialog } from '@/components/forms/boost-dialog';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -48,6 +49,8 @@ export default function FormsPage() {
   const deleteFormMutation = useDeleteForm();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [boostDialogOpen, setBoostDialogOpen] = useState(false);
+  const [boostFormId, setBoostFormId] = useState<string>('');
 
   const isLoading = !isHydrated || isAuthLoading || isFormsLoading;
 
@@ -116,16 +119,8 @@ export default function FormsPage() {
   };
 
   const handleBoost = (formId: string) => {
-    const BOOST_COST = 50;
-    const currentBalance = user?.credits_balance || 0;
-
-    if (currentBalance < BOOST_COST) {
-      toast.error(t('insufficientCredits') || `Insufficient credits. You need ${BOOST_COST} credits.`);
-      return;
-    }
-
-    // In a real app, this would open a dialog or call a mutation
-    toast.success(t('boostSuccess') || 'Form boosted successfully! (Simulated)');
+    setBoostFormId(formId);
+    setBoostDialogOpen(true);
   };
 
   return (
@@ -461,6 +456,12 @@ export default function FormsPage() {
           )}
         </div>
       </main>
+
+      <BoostDialog
+        formId={boostFormId}
+        open={boostDialogOpen}
+        onOpenChange={setBoostDialogOpen}
+      />
     </div>
   );
 }
