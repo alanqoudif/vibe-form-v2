@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { useAuth } from '@/lib/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
 import { useFormStore } from '@/lib/stores/form-store';
 import { useQueryClient } from '@tanstack/react-query';
@@ -91,17 +92,14 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   const [targetResponses, setTargetResponses] = useState<number>(10);
   const [showQuestionListSheet, setShowQuestionListSheet] = useState(false);
 
-  // Fetch form and questions with retry logic
-  useEffect(() => {
-    const maxRetries = 5;
-    const retryDelay = 500; // 500ms delay between retries
-    let retryCount = 0;
-    let timeoutId: NodeJS.Timeout | null = null;
+  const { isHydrated } = useAuth();
 
-    const fetchForm = async (isRetry = false) => {
-      if (!isRetry) {
-        setIsLoading(true);
-      }
+  // Fetch form and questions
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const fetchForm = async () => {
+      setIsLoading(true);
 
       try {
         // Fetch form
@@ -112,15 +110,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           .single();
 
         if (formError || !formData) {
-          // If form not found and we haven't exceeded retries, retry
-          if (retryCount < maxRetries) {
-            retryCount++;
-            timeoutId = setTimeout(() => fetchForm(true), retryDelay * retryCount);
-            return;
-          }
+          console.error('Error fetching form:', formError);
           toast.error(t('formNotFound') || 'Form not found');
           router.push('/forms');
-          setIsLoading(false);
           return;
         }
 
@@ -150,19 +142,11 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
             setTheme(settings.theme);
           }
         }
-
-        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching form:', error);
-        // Retry on error
-        if (retryCount < maxRetries) {
-          retryCount++;
-          timeoutId = setTimeout(() => fetchForm(true), retryDelay * retryCount);
-        } else {
-          toast.error(t('formNotFound') || 'Form not found');
-          router.push('/forms');
-          setIsLoading(false);
-        }
+        console.error('Unexpected error in fetchForm:', error);
+        toast.error(t('errorLoadingForm') || 'Error loading form');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -174,11 +158,8 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
     return () => {
       reset();
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     };
-  }, [id, supabase, router, setForm, setQuestions, reset, t, queryClient]);
+  }, [id, supabase, router, setForm, setQuestions, reset, t, isHydrated, queryClient]);
 
   // Save form
   const handleSave = async () => {
@@ -278,10 +259,10 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
       // Add target_responses if publishing to marketplace
       if (visibility === 'public') {
-        const validTargetResponses = targetResponses && !isNaN(targetResponses) && targetResponses > 0 
-          ? targetResponses 
+        const validTargetResponses = targetResponses && !isNaN(targetResponses) && targetResponses > 0
+          ? targetResponses
           : undefined;
-        
+
         if (validTargetResponses) {
           updateData.target_responses = validTargetResponses;
         } else if (form.target_responses) {
@@ -307,7 +288,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       }
 
       console.log('Form published successfully:', data);
-      
+
       // Verify the update was successful
       if (data && data.length > 0) {
         const updatedForm = data[0];
@@ -317,7 +298,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           visibility: updatedForm.visibility,
           target_responses: updatedForm.target_responses,
         });
-        
+
         // Check if visibility was actually updated
         if (updatedForm.visibility !== visibility) {
           console.error('WARNING: Visibility was not updated correctly!', {
@@ -331,18 +312,18 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       queryClient.invalidateQueries({ queryKey: ['public-forms'] });
       queryClient.invalidateQueries({ queryKey: ['forms'] });
 
-      updateForm({ 
-        status: 'published', 
-        visibility, 
-        target_responses: updateData.target_responses 
+      updateForm({
+        status: 'published',
+        visibility,
+        target_responses: updateData.target_responses
       });
-      
+
       if (visibility === 'public') {
         toast.success(t('publishedToMarketplace') || 'Form published to marketplace successfully!');
       } else {
         toast.success(t('publishSuccess') || 'Form published successfully!');
       }
-      
+
       router.push(`/forms/${id}/analytics`);
     } catch (error) {
       console.error('Error publishing form:', error);
@@ -392,9 +373,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       <div className="min-h-screen bg-background flex flex-col w-full max-w-[100vw] overflow-x-hidden">
         {/* Header - Simplified */}
         <header className="border-b border-border bg-card/50 backdrop-blur-xl shrink-0 sticky top-0 z-20"
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-        }}
+          style={{
+            paddingTop: "env(safe-area-inset-top)",
+          }}
         >
           <div className="flex items-center px-2 sm:px-3 md:px-4 gap-2 sm:gap-3 h-12 sm:h-14">
             {/* Back Button */}
@@ -437,191 +418,191 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-          {/* Actions - Grouped */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Theme Button */}
-            <Sheet open={showThemePicker} onOpenChange={setShowThemePicker}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-9 w-9 touch-manipulation hidden sm:flex">
-                      <Palette className="w-4 h-4" />
-                    </Button>
-                  </SheetTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>{t('customizeTheme')}</p>
-                </TooltipContent>
-              </Tooltip>
-              <SheetContent className="w-full sm:w-[400px] md:w-[540px] bg-card border-border"
-              style={{
-                paddingBottom: "env(safe-area-inset-bottom)",
-              }}
-              >
-                <SheetHeader>
-                  <SheetTitle className="text-foreground flex items-center gap-2 font-display">
-                    <Palette className="w-5 h-5" />
-                    {t('customizeTheme')}
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="mt-6">
-                  <ThemePicker
-                    theme={theme}
-                    onChange={(newTheme) => {
-                      setTheme(newTheme);
-                      setDirty(true);
-                    }}
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            {/* Preview Toggle */}
-            <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setActiveTab('edit')}
-                    className={cn(
-                      "h-7 sm:h-8 px-2 sm:px-3 rounded-md touch-manipulation",
-                      activeTab === 'edit' ? "bg-background shadow-sm" : "hover:bg-transparent"
-                    )}
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline ml-1.5">{t('edit') || 'Edit'}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>{t('edit') || 'Edit'}</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setActiveTab('preview')}
-                    className={cn(
-                      "h-7 sm:h-8 px-2 sm:px-3 rounded-md touch-manipulation",
-                      activeTab === 'preview' ? "bg-background shadow-sm" : "hover:bg-transparent"
-                    )}
-                  >
-                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline ml-1.5">{t('preview')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>{t('preview')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
-
-            {/* Save Button */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleSave}
-                  disabled={isSaving || !isDirty}
-                  className="h-9 w-9 touch-manipulation hidden sm:flex"
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : showSaved ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>{showSaved ? (t('saved') || 'Saved') : (t('save') || 'Save')}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Publish Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  disabled={isPublishing}
-                  size="sm"
-                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground gap-1.5 sm:gap-2 h-9 sm:h-9 px-3 sm:px-4 touch-manipulation"
-                >
-                  {isPublishing ? (
-                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  )}
-                  <span className="text-xs sm:text-sm">{t('publish')}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuLabel>{t('publishOptions') || 'Publishing Options'}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handlePublishToMarketplace} className="cursor-pointer">
-                  <Globe className="w-4 h-4 mr-2 text-primary" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{t('publishToMarketplace') || 'Publish to Marketplace'}</span>
-                    <span className="text-xs text-muted-foreground">{t('getResponsesFromInterested') || 'Get responses from interested users'}</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handlePublish('unlisted')} className="cursor-pointer">
-                  <LinkIcon className="w-4 h-4 mr-2" />
-                  <div className="flex flex-col">
-                    <span>{t('shareLink') || 'Share via Link'}</span>
-                    <span className="text-xs text-muted-foreground">{t('onlyPeopleWithLink') || 'Only people with link'}</span>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* More Options for published forms */}
-            {form?.status === 'published' && (
-              <>
-                <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
+            {/* Actions - Grouped */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Theme Button */}
+              <Sheet open={showThemePicker} onOpenChange={setShowThemePicker}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={handleCopyLink} className="h-9 w-9 touch-manipulation hidden sm:flex">
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{t('copyLink') || 'Copy link'}</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <a href={`/f/${id}`} target="_blank">
+                    <SheetTrigger asChild>
                       <Button variant="outline" size="icon" className="h-9 w-9 touch-manipulation hidden sm:flex">
-                        <ExternalLink className="w-4 h-4" />
+                        <Palette className="w-4 h-4" />
                       </Button>
-                    </a>
+                    </SheetTrigger>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    <p>{t('openForm') || 'Open form'}</p>
+                    <p>{t('customizeTheme')}</p>
                   </TooltipContent>
                 </Tooltip>
-              </>
-            )}
-          </div>
-        </div>
+                <SheetContent className="w-full sm:w-[400px] md:w-[540px] bg-card border-border"
+                  style={{
+                    paddingBottom: "env(safe-area-inset-bottom)",
+                  }}
+                >
+                  <SheetHeader>
+                    <SheetTitle className="text-foreground flex items-center gap-2 font-display">
+                      <Palette className="w-5 h-5" />
+                      {t('customizeTheme')}
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <ThemePicker
+                      theme={theme}
+                      onChange={(newTheme) => {
+                        setTheme(newTheme);
+                        setDirty(true);
+                      }}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
 
-        {/* Description Field */}
-        <div className="px-2 sm:px-3 md:px-4 pb-2 sm:pb-3 border-t border-border/50 pt-2">
-          <Textarea
-            value={form?.description || ''}
-            onChange={(e) => updateForm({ description: e.target.value })}
-            placeholder={t('formDescriptionPlaceholder') || 'Add a description for your form (optional)...'}
-            className="bg-muted/50 border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus-visible:ring-1 focus-visible:ring-ring/50 min-h-[60px] max-h-[100px] text-xs sm:text-sm"
-            rows={2}
-          />
-        </div>
-      </header>
+              {/* Preview Toggle */}
+              <div className="flex items-center rounded-lg border border-border bg-muted p-0.5">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setActiveTab('edit')}
+                      className={cn(
+                        "h-7 sm:h-8 px-2 sm:px-3 rounded-md touch-manipulation",
+                        activeTab === 'edit' ? "bg-background shadow-sm" : "hover:bg-transparent"
+                      )}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline ml-1.5">{t('edit') || 'Edit'}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{t('edit') || 'Edit'}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setActiveTab('preview')}
+                      className={cn(
+                        "h-7 sm:h-8 px-2 sm:px-3 rounded-md touch-manipulation",
+                        activeTab === 'preview' ? "bg-background shadow-sm" : "hover:bg-transparent"
+                      )}
+                    >
+                      <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline ml-1.5">{t('preview')}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{t('preview')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+
+              <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
+
+              {/* Save Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleSave}
+                    disabled={isSaving || !isDirty}
+                    className="h-9 w-9 touch-manipulation hidden sm:flex"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : showSaved ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>{showSaved ? (t('saved') || 'Saved') : (t('save') || 'Save')}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Publish Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    disabled={isPublishing}
+                    size="sm"
+                    className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground gap-1.5 sm:gap-2 h-9 sm:h-9 px-3 sm:px-4 touch-manipulation"
+                  >
+                    {isPublishing ? (
+                      <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    )}
+                    <span className="text-xs sm:text-sm">{t('publish')}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel>{t('publishOptions') || 'Publishing Options'}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handlePublishToMarketplace} className="cursor-pointer">
+                    <Globe className="w-4 h-4 mr-2 text-primary" />
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{t('publishToMarketplace') || 'Publish to Marketplace'}</span>
+                      <span className="text-xs text-muted-foreground">{t('getResponsesFromInterested') || 'Get responses from interested users'}</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handlePublish('unlisted')} className="cursor-pointer">
+                    <LinkIcon className="w-4 h-4 mr-2" />
+                    <div className="flex flex-col">
+                      <span>{t('shareLink') || 'Share via Link'}</span>
+                      <span className="text-xs text-muted-foreground">{t('onlyPeopleWithLink') || 'Only people with link'}</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* More Options for published forms */}
+              {form?.status === 'published' && (
+                <>
+                  <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" onClick={handleCopyLink} className="h-9 w-9 touch-manipulation hidden sm:flex">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('copyLink') || 'Copy link'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a href={`/f/${id}`} target="_blank">
+                        <Button variant="outline" size="icon" className="h-9 w-9 touch-manipulation hidden sm:flex">
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('openForm') || 'Open form'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Description Field */}
+          <div className="px-2 sm:px-3 md:px-4 pb-2 sm:pb-3 border-t border-border/50 pt-2">
+            <Textarea
+              value={form?.description || ''}
+              onChange={(e) => updateForm({ description: e.target.value })}
+              placeholder={t('formDescriptionPlaceholder') || 'Add a description for your form (optional)...'}
+              className="bg-muted/50 border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus-visible:ring-1 focus-visible:ring-ring/50 min-h-[60px] max-h-[100px] text-xs sm:text-sm"
+              rows={2}
+            />
+          </div>
+        </header>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
@@ -646,9 +627,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               {/* Question List Sheet - Mobile */}
               <Sheet open={showQuestionListSheet} onOpenChange={setShowQuestionListSheet}>
                 <SheetContent side="left" className="w-[320px] sm:w-[400px] bg-card border-border p-0"
-                style={{
-                  paddingBottom: "env(safe-area-inset-bottom)",
-                }}
+                  style={{
+                    paddingBottom: "env(safe-area-inset-bottom)",
+                  }}
                 >
                   <div className="p-4 border-b border-border/50 shrink-0">
                     <h2 className="font-semibold text-foreground flex items-center gap-2 font-display">
@@ -727,9 +708,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
             </>
           ) : (
             <main className="flex-1 overflow-auto bg-muted/30 p-3 sm:p-4 md:p-6"
-            style={{
-              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
-            }}
+              style={{
+                paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+              }}
             >
               <div className="max-w-4xl mx-auto">
                 {/* Preview Controls */}
@@ -778,9 +759,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       {/* Marketplace Publish Dialog */}
       <Dialog open={showMarketplaceDialog} onOpenChange={setShowMarketplaceDialog}>
         <DialogContent className="w-[95vw] sm:max-w-md"
-        style={{
-          paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
-        }}
+          style={{
+            paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+          }}
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
