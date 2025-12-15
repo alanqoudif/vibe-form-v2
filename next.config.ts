@@ -105,10 +105,6 @@ const nextConfig: NextConfig = {
   compress: true,
   // PoweredBy header removal (security)
   poweredByHeader: false,
-  // Performance optimizations
-  swcMinify: true,
-  // Optimize fonts
-  optimizeFonts: true,
   // Production source maps (disable for better performance)
   productionBrowserSourceMaps: false,
   // React strict mode
