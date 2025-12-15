@@ -91,60 +91,94 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   const [targetResponses, setTargetResponses] = useState<number>(10);
   const [showQuestionListSheet, setShowQuestionListSheet] = useState(false);
 
-  // Fetch form and questions
+  // Fetch form and questions with retry logic
   useEffect(() => {
-    const fetchForm = async () => {
-      setIsLoading(true);
+    const maxRetries = 5;
+    const retryDelay = 500; // 500ms delay between retries
+    let retryCount = 0;
+    let timeoutId: NodeJS.Timeout | null = null;
 
-      // Fetch form
-      const { data: formData, error: formError } = await supabase
-        .from('forms')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (formError || !formData) {
-        toast.error(t('formNotFound') || 'Form not found');
-        router.push('/forms');
-        return;
+    const fetchForm = async (isRetry = false) => {
+      if (!isRetry) {
+        setIsLoading(true);
       }
 
-      // Fetch questions
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('form_questions')
-        .select('*')
-        .eq('form_id', id)
-        .order('order_index', { ascending: true });
+      try {
+        // Fetch form
+        const { data: formData, error: formError } = await supabase
+          .from('forms')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-      if (questionsError) {
-        console.error('Error fetching questions:', questionsError);
-      }
+        if (formError || !formData) {
+          // If form not found and we haven't exceeded retries, retry
+          if (retryCount < maxRetries) {
+            retryCount++;
+            timeoutId = setTimeout(() => fetchForm(true), retryDelay * retryCount);
+            return;
+          }
+          toast.error(t('formNotFound') || 'Form not found');
+          router.push('/forms');
+          setIsLoading(false);
+          return;
+        }
 
-      setForm(formData as Form);
-      setQuestions((questionsData || []) as FormQuestion[]);
+        // Fetch questions
+        const { data: questionsData, error: questionsError } = await supabase
+          .from('form_questions')
+          .select('*')
+          .eq('form_id', id)
+          .order('order_index', { ascending: true });
 
-      // Load target responses if exists
-      if (formData.target_responses) {
-        setTargetResponses(formData.target_responses);
-      }
+        if (questionsError) {
+          console.error('Error fetching questions:', questionsError);
+        }
 
-      // Load theme from form settings
-      if (formData.settings && typeof formData.settings === 'object') {
-        const settings = formData.settings as { theme?: FormTheme };
-        if (settings.theme) {
-          setTheme(settings.theme);
+        setForm(formData as Form);
+        setQuestions((questionsData || []) as FormQuestion[]);
+
+        // Load target responses if exists
+        if (formData.target_responses) {
+          setTargetResponses(formData.target_responses);
+        }
+
+        // Load theme from form settings
+        if (formData.settings && typeof formData.settings === 'object') {
+          const settings = formData.settings as { theme?: FormTheme };
+          if (settings.theme) {
+            setTheme(settings.theme);
+          }
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching form:', error);
+        // Retry on error
+        if (retryCount < maxRetries) {
+          retryCount++;
+          timeoutId = setTimeout(() => fetchForm(true), retryDelay * retryCount);
+        } else {
+          toast.error(t('formNotFound') || 'Form not found');
+          router.push('/forms');
+          setIsLoading(false);
         }
       }
-
-      setIsLoading(false);
     };
+
+    // Invalidate queries to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: ['forms'] });
+    queryClient.invalidateQueries({ queryKey: ['form', id] });
 
     fetchForm();
 
     return () => {
       reset();
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [id, supabase, router, setForm, setQuestions, reset, t]);
+  }, [id, supabase, router, setForm, setQuestions, reset, t, queryClient]);
 
   // Save form
   const handleSave = async () => {

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Sparkles, Bot, Layout, Loader2, CheckCircle2 } from 'lucide-react';
 
@@ -11,6 +12,7 @@ function BuildingPageContent() {
     const searchParams = useSearchParams();
     const prompt = searchParams.get('prompt');
     const router = useRouter();
+    const queryClient = useQueryClient();
     const t = useTranslations('building');
 
     const [step, setStep] = useState(0);
@@ -53,6 +55,10 @@ function BuildingPageContent() {
 
                 const { formId } = await response.json();
 
+                // Invalidate queries to ensure fresh data when navigating
+                queryClient.invalidateQueries({ queryKey: ['forms'] });
+                queryClient.invalidateQueries({ queryKey: ['form', formId] });
+
                 // Final success step
                 setStep(steps.length - 1);
                 setTimeout(() => {
@@ -67,7 +73,7 @@ function BuildingPageContent() {
         };
 
         createForm();
-    }, [prompt, router]);
+    }, [prompt, router, queryClient]);
 
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
