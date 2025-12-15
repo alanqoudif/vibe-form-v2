@@ -2,7 +2,7 @@
 
 A modern, open-source AI-powered form builder platform with a marketplace for respondents and a credit-based economy. Create professional surveys in seconds using natural language, get quality responses from an engaged community, and gain AI-powered insights.
 
-![Vibe Form Landing Page](https://via.placeholder.com/800x400?text=Vibe+Form+Landing+Page)
+![Vibe Form Landing Page](https://raw.githubusercontent.com/alanqoudif/vibe-form-v2/main/public/image.png)
 
 ## ✨ Features
 
@@ -74,7 +74,7 @@ A modern, open-source AI-powered form builder platform with a marketplace for re
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/vibe-form-v2.git
+   git clone https://github.com/alanqoudif/vibe-form-v2.git
    cd vibe-form-v2
    ```
 
@@ -114,7 +114,7 @@ A modern, open-source AI-powered form builder platform with a marketplace for re
 
 ### Deploy to Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/vibe-form-v2)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/alanqoudif/vibe-form-v2)
 
 1. **Click the deploy button above** or visit [Vercel](https://vercel.com)
 2. **Import your repository** from GitHub
@@ -325,15 +325,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Documentation:** Check this README and code comments
-- **Issues:** [GitHub Issues](https://github.com/YOUR_USERNAME/vibe-form-v2/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/YOUR_USERNAME/vibe-form-v2/discussions)
+- **Issues:** [GitHub Issues](https://github.com/alanqoudif/vibe-form-v2/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/alanqoudif/vibe-form-v2/discussions)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by [Faisal Al-Anqoudi](https://github.com/YOUR_USERNAME) from [nuqta ai](https://nuqta.ai)**
+**Made with ❤️ by [Faisal Al-Anqoudi](https://github.com/alanqoudif) from [nuqta ai](https://nuqta.ai)**
 
-[⭐ Star us on GitHub](https://github.com/YOUR_USERNAME/vibe-form-v2) • [🐛 Report Bug](https://github.com/YOUR_USERNAME/vibe-form-v2/issues) • [💡 Request Feature](https://github.com/YOUR_USERNAME/vibe-form-v2/issues)
+[⭐ Star us on GitHub](https://github.com/alanqoudif/vibe-form-v2) • [🐛 Report Bug](https://github.com/alanqoudif/vibe-form-v2/issues) • [💡 Request Feature](https://github.com/alanqoudif/vibe-form-v2/issues)
 
 </div>
