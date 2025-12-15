@@ -1,41 +1,26 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LocaleProvider } from "@/components/providers/locale-provider";
+import { generateMetadata as generateSEOMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Vibe Form - Create Forms with AI",
-  description: "Turn your ideas into professional surveys in seconds. Get responses from our community.",
-  keywords: ["forms", "surveys", "AI", "questionnaire", "feedback", "research"],
-  authors: [{ name: "Vibe Form" }],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-    viewportFit: "cover",
-  },
-  openGraph: {
-    title: "Vibe Form - Create Forms with AI",
-    description: "Turn your ideas into professional surveys in seconds.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Vibe Form - Create Forms with AI",
-    description: "Turn your ideas into professional surveys in seconds.",
-  },
-};
+export const metadata: Metadata = generateSEOMetadata({
+  locale: "en",
+  path: "/",
+  type: "website",
+});
 
 export default function RootLayout({
   children,

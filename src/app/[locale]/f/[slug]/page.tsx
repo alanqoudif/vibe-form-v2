@@ -366,7 +366,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
             >
               <Image
                 src="/fonts/vibe form logo.png"
-                alt="Vibe Form Logo"
+                alt={form?.title ? `${form.title} - Vibe Form` : "Vibe Form - Create Forms with AI"}
                 width={32}
                 height={32}
                 className="object-contain"

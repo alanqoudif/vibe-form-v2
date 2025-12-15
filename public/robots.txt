@@ -1,0 +1,71 @@
+# Robots.txt for vibeform.pro
+# Optimized for SEO
+
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /pricing
+Allow: /faq
+Allow: /templates
+Allow: /vs-google-forms
+Allow: /blog
+Allow: /f/
+Allow: /en/f/
+Allow: /ar/f/
+Allow: /ar/features
+Allow: /ar/pricing
+Allow: /ar/faq
+Allow: /ar/templates
+Allow: /ar/vs-google-forms
+Allow: /ar/blog
+
+# Disallow private/admin pages
+Disallow: /api/
+Disallow: /_next/
+Disallow: /building
+Disallow: /forms/*/builder
+Disallow: /forms/*/analytics
+Disallow: /settings
+Disallow: /credits
+Disallow: /login
+Disallow: /signup
+
+# Allow public forms
+Allow: /f/
+Allow: /en/f/
+Allow: /ar/f/
+
+# Crawl-delay (optional, adjust if needed)
+# Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://vibeform.pro/sitemap.xml
+
+# Google-specific rules
+User-agent: Googlebot
+Allow: /
+Allow: /features
+Allow: /pricing
+Allow: /faq
+Allow: /templates
+Allow: /vs-google-forms
+Allow: /blog
+Allow: /f/
+Allow: /ar/features
+Allow: /ar/pricing
+Allow: /ar/faq
+Allow: /ar/templates
+Allow: /ar/vs-google-forms
+Allow: /ar/blog
+
+# Bing-specific rules
+User-agent: Bingbot
+Allow: /
+Allow: /features
+Allow: /pricing
+Allow: /faq
+Allow: /templates
+Allow: /vs-google-forms
+Allow: /blog
+Allow: /f/
+

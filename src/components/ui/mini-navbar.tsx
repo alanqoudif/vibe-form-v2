@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname, useRouter as useIntlRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { Globe, ChevronDown, Menu, X, LogOut, User, Settings, CreditCard } from 'lucide-react';
+import { Globe, ChevronDown, Menu, X, LogOut, User, Settings, CreditCard, Github, Rocket } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -224,7 +224,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
             )}>
               <Image
                 src="/fonts/vibe form logo.png"
-                alt="Vibe Form Logo"
+                alt="Vibe Form - AI-Powered Form Builder Logo"
                 width={40}
                 height={40}
                 className="object-contain"
@@ -272,6 +272,46 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* GitHub & Deploy Links */}
+            <div className="hidden sm:flex items-center gap-1.5">
+              <a
+                href="https://github.com/YOUR_USERNAME/vibe-form-v2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "p-2.5 rounded-xl transition-all duration-300",
+                  "hover:scale-110 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center",
+                  "border border-transparent hover:border-border/50 touch-manipulation",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  isHero 
+                    ? "text-white/90 hover:text-white hover:bg-white/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                )}
+                aria-label={t('viewSource') || 'View Source Code'}
+                title={t('viewSource') || 'View Source Code'}
+              >
+                <Github className="w-5 h-5" />
+              </a>
+              <a
+                href="https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/vibe-form-v2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-300",
+                  "hover:scale-105 active:scale-95 min-h-[44px] flex items-center gap-1.5",
+                  "border border-border/50 touch-manipulation",
+                  isHero 
+                    ? "text-white/90 hover:text-white hover:bg-white/10 hover:border-white/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                )}
+                aria-label={t('deploy') || 'Deploy to Vercel'}
+                title={t('deploy') || 'Deploy to Vercel'}
+              >
+                <Rocket className="w-4 h-4" />
+                <span className="hidden md:inline">{t('deploy')}</span>
+              </a>
+            </div>
+            
             <LanguageSelector />
             
             {/* Only show auth UI after client-side hydration to prevent mismatch */}
@@ -385,6 +425,42 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   </Link>
                 );
               })}
+              
+              {/* Mobile GitHub & Deploy Links */}
+              <div className="flex flex-col gap-2.5 pt-3 sm:pt-4 border-t border-border/50 mt-2">
+                <a
+                  href="https://github.com/YOUR_USERNAME/vibe-form-v2"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
+                    "active:scale-95 border min-h-[44px] flex items-center justify-center gap-2 touch-manipulation",
+                    isHero 
+                      ? "text-white hover:bg-white/10 border-white/20"
+                      : "text-foreground hover:bg-muted/70 border-border/50"
+                  )}
+                >
+                  <Github className="w-4 h-4" />
+                  {t('viewSource')}
+                </a>
+                <a
+                  href="https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/vibe-form-v2"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
+                    "active:scale-95 border min-h-[44px] flex items-center justify-center gap-2 touch-manipulation",
+                    isHero 
+                      ? "text-white hover:bg-white/10 border-white/20"
+                      : "text-foreground hover:bg-muted/70 border-border/50"
+                  )}
+                >
+                  <Rocket className="w-4 h-4" />
+                  {t('deploy')}
+                </a>
+              </div>
               
               {isHydrated && !isLoading && !user && (
                 <div className="flex flex-col gap-2.5 pt-3 sm:pt-4 border-t border-border/50 mt-2">

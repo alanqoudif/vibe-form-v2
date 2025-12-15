@@ -31,7 +31,10 @@
     "darkMode": "Dark mode",
     "language": "Language",
     "signedOut": "Signed out successfully",
-    "loginRequired": "Please log in to access this page"
+    "loginRequired": "Please log in to access this page",
+    "github": "GitHub",
+    "viewSource": "View Source",
+    "deploy": "Deploy"
   },
   "hero": {
     "title": "Create Forms with AI",

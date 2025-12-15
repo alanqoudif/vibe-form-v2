@@ -384,7 +384,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                 <Image
                   src="/fonts/vibe form logo.png"
-                  alt="Vibe Form Logo"
+                  alt="Vibe Form - Form Builder Logo"
                   width={32}
                   height={32}
                   className="object-contain"
