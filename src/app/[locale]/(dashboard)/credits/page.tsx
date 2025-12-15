@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Navbar } from '@/components/ui/mini-navbar';
-import { motion } from 'motion/react';
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -83,12 +82,12 @@ export default function CreditsPage() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-          <Skeleton className="h-48 w-full rounded-3xl" />
+        <main className="container mx-auto px-4 py-8 max-w-3xl">
+          <Skeleton className="h-48 w-full mb-8" />
           <div className="space-y-4">
-            <Skeleton className="h-20 w-full rounded-2xl" />
-            <Skeleton className="h-20 w-full rounded-2xl" />
-            <Skeleton className="h-20 w-full rounded-2xl" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
           </div>
         </main>
       </div>
@@ -96,121 +95,116 @@ export default function CreditsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/20">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="max-w-3xl mx-auto px-4 py-12 space-y-12">
-        {/* Simplified Header & Balance */}
-        <div className="text-center space-y-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4 ring-1 ring-primary/20 shadow-lg shadow-primary/5"
-          >
-            <Wallet className="w-8 h-8 text-primary" />
-          </motion.div>
+      <main className="container mx-auto px-4 py-8 max-w-3xl">
+        {/* Header & Balance */}
+        <Card className="mb-8">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-6">
+              <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10">
+                <Wallet className="w-6 h-6 text-primary" />
+              </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-2"
-          >
-            <h1 className="text-6xl md:text-7xl font-display font-bold tracking-tighter text-foreground">
-              {availableCredits.toLocaleString()}
-            </h1>
-            <p className="text-lg text-muted-foreground font-medium uppercase tracking-widest">
-              {t('creditsLabel') || 'Available Credits'}
-            </p>
-          </motion.div>
+              <div className="space-y-2">
+                <h1 className="text-5xl font-bold tracking-tight">
+                  {availableCredits.toLocaleString()}
+                </h1>
+                <p className="text-muted-foreground font-medium uppercase tracking-wider text-sm">
+                  {t('creditsLabel') || 'Available Credits'}
+                </p>
+              </div>
 
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex items-center justify-center gap-4 pt-4"
-          >
-            <Link href="/feed">
-              <Button size="lg" className="rounded-full h-12 px-8 bg-foreground text-background hover:bg-foreground/90 font-medium">
-                <Sparkles className="w-4 h-4 mr-2" />
-                {t('earn') || 'Earn Credits'}
-              </Button>
-            </Link>
-            <Link href="/forms">
-              <Button size="lg" variant="outline" className="rounded-full h-12 px-8 bg-background hover:bg-muted font-medium">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                {t('boost') || 'Boost Form'}
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
+              {/* Quick Actions */}
+              <div className="flex items-center justify-center gap-4 pt-4">
+                <Link href="/feed">
+                  <Button>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {t('earn') || 'Earn Credits'}
+                  </Button>
+                </Link>
+                <Link href="/forms">
+                  <Button variant="outline">
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    {t('boost') || 'Boost Form'}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Simplified Transaction History */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-6"
-        >
-          <div className="flex items-center justify-between px-2">
+        {/* Transaction History */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{t('recentActivity') || 'Recent Activity'}</h2>
-            <Badge variant="outline" className="rounded-full px-3 font-normal text-muted-foreground">
+            <Badge variant="outline">
               {t('last30Days') || 'Last 30 Days'}
             </Badge>
           </div>
 
-          <div className="space-y-3">
-            {ledger.length === 0 ? (
-              <div className="text-center py-16 border border-dashed rounded-3xl bg-muted/20">
-                <p className="text-muted-foreground">{t('noTransactions') || 'No transactions yet.'}</p>
-                <Link href="/feed" className="text-primary hover:underline mt-2 inline-block text-sm">
-                  {t('startEarning') || 'Start earning now'}
+          {ledger.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <p className="text-muted-foreground mb-4">{t('noTransactions') || 'No transactions yet.'}</p>
+                <Link href="/feed">
+                  <Button variant="outline">
+                    {t('startEarning') || 'Start earning now'}
+                  </Button>
                 </Link>
-              </div>
-            ) : (
-              ledger.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="group flex items-center justify-between p-4 bg-card hover:bg-muted/50 border border-border/40 hover:border-primary/20 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                      entry.amount > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
-                    )}>
-                      {entry.amount > 0 ? (
-                        <ArrowDownLeft className="w-6 h-6" />
-                      ) : (
-                        <ArrowUpRight className="w-6 h-6" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-base text-foreground group-hover:text-primary transition-colors">
-                        {getReasonLabel(entry.reason)}
-                      </p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{formatDate(entry.created_at)}</span>
-                        {entry.form_title && (
-                          <>
-                            <span className="text-border">•</span>
-                            <span>{entry.form_title}</span>
-                          </>
-                        )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {ledger.map((entry) => (
+                <Card key={entry.id} className="hover:bg-muted/50 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
+                          entry.amount > 0 
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                            : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                        )}>
+                          {entry.amount > 0 ? (
+                            <ArrowDownLeft className="w-5 h-5" />
+                          ) : (
+                            <ArrowUpRight className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {getReasonLabel(entry.reason)}
+                          </p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{formatDate(entry.created_at)}</span>
+                            {entry.form_title && (
+                              <>
+                                <span className="text-border">•</span>
+                                <span className="truncate max-w-[200px]">{entry.form_title}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={cn(
+                        "text-lg font-semibold tabular-nums",
+                        entry.amount > 0 
+                          ? "text-emerald-600 dark:text-emerald-400" 
+                          : "text-foreground"
+                      )}>
+                        {entry.amount > 0 ? '+' : ''}{entry.amount}
                       </div>
                     </div>
-                  </div>
-                  <div className={cn(
-                    "text-lg font-display font-bold tabular-nums",
-                    entry.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"
-                  )}>
-                    {entry.amount > 0 ? '+' : ''}{entry.amount}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </motion.div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
