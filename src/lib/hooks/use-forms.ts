@@ -22,7 +22,7 @@ export const formKeys = {
 };
 
 export function useForms(limit?: number) {
-  const { user } = useAuthStore();
+  const { user, isHydrated } = useAuthStore();
   const supabase = createClient();
 
   return useQuery({
@@ -61,9 +61,11 @@ export function useForms(limit?: number) {
         responses: undefined,
       })) as FormListItem[];
     },
-    enabled: !!user,
-    staleTime: 30 * 1000, // 30 seconds
+    // Only enable when user exists AND store is hydrated to avoid unnecessary calls
+    enabled: !!user && isHydrated,
+    staleTime: 60 * 1000, // 1 minute - increased from 30s
     gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+    refetchOnMount: false, // Don't refetch if we have cached data
   });
 }
 
@@ -181,6 +183,7 @@ export function usePublicForms(excludeUserId?: string) {
       }));
     },
     staleTime: 60 * 1000, // 1 minute
+    refetchOnMount: false, // Don't refetch if we have cached data
   });
 }
 

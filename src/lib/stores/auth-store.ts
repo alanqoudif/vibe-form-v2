@@ -9,9 +9,11 @@ interface AuthState {
   user: Profile | null;
   isLoading: boolean;
   isHydrated: boolean;
+  isInitializing: boolean;
   setUser: (user: Profile | null) => void;
   setLoading: (loading: boolean) => void;
   setHydrated: (hydrated: boolean) => void;
+  setInitializing: (isInitializing: boolean) => void;
   clearAuth: () => void;
 }
 
@@ -32,10 +34,12 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isLoading: true,
       isHydrated: false,
-      setUser: (user) => set({ user, isLoading: false }),
+      isInitializing: true,
+      setUser: (user) => set({ user, isLoading: false, isInitializing: false }),
       setLoading: (isLoading) => set({ isLoading }),
       setHydrated: (isHydrated) => set({ isHydrated }),
-      clearAuth: () => set({ user: null, isLoading: false }),
+      setInitializing: (isInitializing) => set({ isInitializing }),
+      clearAuth: () => set({ user: null, isLoading: false, isInitializing: false }),
     }),
     {
       name: 'vibe-auth',
@@ -46,10 +50,10 @@ export const useAuthStore = create<AuthState>()(
           if (error) {
             console.error('Auth hydration error:', error);
           }
-          // After hydration from localStorage, validate with Supabase
+          // After hydration from localStorage, validate with Supabase immediately
           if (typeof window !== 'undefined') {
-            // Use setTimeout to ensure store is fully initialized
-            setTimeout(() => bootstrapAuth(), 0);
+            // Start bootstrap immediately without setTimeout delay
+            bootstrapAuth();
           }
         };
       },
@@ -63,7 +67,11 @@ const bootstrapAuth = async () => {
   bootstrapInitialized = true;
 
   const supabase = getSupabaseClient();
-  const { setUser, setLoading, setHydrated } = useAuthStore.getState();
+  const { setUser, setLoading, setHydrated, setInitializing } = useAuthStore.getState();
+
+  // Mark as hydrated immediately to allow UI to render
+  setHydrated(true);
+  setInitializing(true);
 
   try {
     // Get current session from Supabase (validates against server)
@@ -94,7 +102,7 @@ const bootstrapAuth = async () => {
     setUser(null);
   } finally {
     setLoading(false);
-    setHydrated(true);
+    setInitializing(false);
   }
 
   // Listen for auth state changes

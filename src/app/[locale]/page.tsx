@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { HeroWave } from '@/components/ui/ai-input-hero';
@@ -12,17 +12,25 @@ import { toast } from 'sonner';
 export default function HomePage() {
   const t = useTranslations('hero');
   const router = useRouter();
-  const { user, isLoading: isAuthLoading, isHydrated } = useAuth();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Track client-side mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { user, isHydrated } = useAuth();
+  const [isGenerating] = useState(false);
 
   // Use React Query for fetching forms - much better caching and state management
   const { data: forms = [], isLoading: isLoadingForms } = useForms(6);
+
+  const handlePromptSubmit = async (prompt: string) => {
+    // Check if user is logged in
+    if (!user) {
+      // Redirect to login with the prompt stored
+      sessionStorage.setItem('pendingPrompt', prompt);
+      router.push('/login?redirect=/');
+      toast.info(t('loginToCreate') || 'Please log in to create a form');
+      return;
+    }
+
+    // Redirect to the AI builder animation page
+    router.push(`/building?prompt=${encodeURIComponent(prompt)}`);
+  };
 
   // Handle pending prompt after login
   useEffect(() => {
@@ -40,21 +48,7 @@ export default function HomePage() {
     // Small delay to ensure auth state is fully settled
     const timer = setTimeout(checkPendingPrompt, 500);
     return () => clearTimeout(timer);
-  }, [user]);
-
-  const handlePromptSubmit = async (prompt: string) => {
-    // Check if user is logged in
-    if (!user) {
-      // Redirect to login with the prompt stored
-      sessionStorage.setItem('pendingPrompt', prompt);
-      router.push('/login?redirect=/');
-      toast.info(t('loginToCreate') || 'Please log in to create a form');
-      return;
-    }
-
-    // Redirect to the AI builder animation page
-    router.push(`/building?prompt=${encodeURIComponent(prompt)}`);
-  };
+  }, [user, router]);
 
   const suggestions = [
     t('suggestions.fitness'),
@@ -66,14 +60,16 @@ export default function HomePage() {
     t('suggestions.finance'),
   ];
 
-  // Determine if we should show user content (only after hydration)
-  const showUserContent = mounted && isHydrated && !isAuthLoading;
-  const showUserForms = showUserContent && user;
-  const showFeatures = showUserContent && !user;
+  // Show content progressively - don't block everything
+  // Hero section always shows immediately
+  // Forms section shows when hydrated and user exists
+  // Features section shows when hydrated and no user
+  const showUserForms = isHydrated && !!user;
+  const showFeatures = isHydrated && !user;
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {/* Hero Section - Always show immediately, no blocking */}
       <HeroWave
         title={t('title')}
         subtitle={t('subtitle')}
@@ -84,7 +80,7 @@ export default function HomePage() {
         suggestions={suggestions}
       />
 
-      {/* My Forms Section - only show if user is logged in and hydrated */}
+      {/* My Forms Section - Show progressively when user is authenticated */}
       {showUserForms && (
         <MyFormsSection
           forms={forms}
@@ -92,7 +88,7 @@ export default function HomePage() {
         />
       )}
 
-      {/* Features Section for non-logged in users */}
+      {/* Features Section for non-logged in users - Show when hydrated and no user */}
       {showFeatures && (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-muted/30">
           <div className="max-w-7xl mx-auto">
