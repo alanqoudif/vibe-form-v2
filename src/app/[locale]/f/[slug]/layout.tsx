@@ -92,7 +92,7 @@ export default async function FormLayout({
       .eq('id', form.owner_id)
       .single();
     
-    authorName = profile?.full_name || profile?.username;
+    authorName = (profile?.full_name || profile?.username) || undefined;
   }
 
   // Breadcrumb items
