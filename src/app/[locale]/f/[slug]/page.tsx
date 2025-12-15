@@ -40,78 +40,102 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   // Fetch form and questions
   useEffect(() => {
     const fetchForm = async () => {
-      // Track view event
-      const sessionId = crypto.randomUUID();
-      
-      // Fetch form
-      const { data: formData, error: formError } = await supabase
-        .from('forms')
-        .select('*')
-        .eq('id', slug)
-        .eq('status', 'published')
-        .single();
-
-      if (formError || !formData) {
-        toast.error('Form not found or not published');
-        router.push('/');
-        return;
-      }
-
-      // Fetch questions
-      const { data: questionsData } = await supabase
-        .from('form_questions')
-        .select('*')
-        .eq('form_id', slug)
-        .order('order_index', { ascending: true });
-
-      setForm(formData);
-      setQuestions(questionsData || []);
-      
-      // Load theme from form settings
-      if (formData.settings && typeof formData.settings === 'object') {
-        const settings = formData.settings as { theme?: FormTheme };
-        if (settings.theme) {
-          setTheme(settings.theme);
-        }
-      }
-      
-      // Track view event
-      await supabase.from('form_events').insert({
-        form_id: slug,
-        event_type: 'view',
-        session_id: sessionId,
-        user_id: user?.id || null,
-        metadata: { referrer: document.referrer },
-      });
-
-      // Create response record
-      const { data: responseData } = await supabase
-        .from('responses')
-        .insert({
-          form_id: slug,
-          respondent_id: user?.id || null,
-          is_anonymous: !user,
-        })
-        .select()
-        .single();
-
-      if (responseData) {
-        setResponseId(responseData.id);
+      try {
+        setIsLoading(true);
         
-        // Track start event
-        await supabase.from('form_events').insert({
-          form_id: slug,
-          event_type: 'start',
-          session_id: sessionId,
-          user_id: user?.id || null,
-        });
-      }
+        // Get current user from store (may be null if not logged in or still loading)
+        const currentUser = useAuthStore.getState().user;
+        
+        // Track view event
+        const sessionId = crypto.randomUUID();
+        
+        // Fetch form
+        const { data: formData, error: formError } = await supabase
+          .from('forms')
+          .select('*')
+          .eq('id', slug)
+          .eq('status', 'published')
+          .single();
 
-      setIsLoading(false);
+        if (formError || !formData) {
+          console.error('Form fetch error:', formError);
+          toast.error('Form not found or not published');
+          setIsLoading(false);
+          router.push('/');
+          return;
+        }
+
+        // Fetch questions
+        const { data: questionsData, error: questionsError } = await supabase
+          .from('form_questions')
+          .select('*')
+          .eq('form_id', slug)
+          .order('order_index', { ascending: true });
+
+        if (questionsError) {
+          console.error('Questions fetch error:', questionsError);
+          // Still show the form even if questions fail to load
+        }
+
+        setForm(formData);
+        setQuestions(questionsData || []);
+        
+        // Load theme from form settings
+        if (formData.settings && typeof formData.settings === 'object') {
+          const settings = formData.settings as { theme?: FormTheme };
+          if (settings.theme) {
+            setTheme(settings.theme);
+          }
+        }
+        
+        // Track view event (non-blocking)
+        supabase.from('form_events').insert({
+          form_id: slug,
+          event_type: 'view',
+          session_id: sessionId,
+          user_id: currentUser?.id || null,
+          metadata: { referrer: typeof document !== 'undefined' ? document.referrer : '' },
+        }).catch(err => console.error('Failed to track view event:', err));
+
+        // Create response record (non-blocking)
+        const { data: responseData, error: responseError } = await supabase
+          .from('responses')
+          .insert({
+            form_id: slug,
+            respondent_id: currentUser?.id || null,
+            is_anonymous: !currentUser,
+          })
+          .select()
+          .single();
+
+        if (responseData) {
+          setResponseId(responseData.id);
+          
+          // Track start event (non-blocking)
+          supabase.from('form_events').insert({
+            form_id: slug,
+            event_type: 'start',
+            session_id: sessionId,
+            user_id: currentUser?.id || null,
+          }).catch(err => console.error('Failed to track start event:', err));
+        } else if (responseError) {
+          console.error('Failed to create response record:', responseError);
+          // Continue anyway - form can still be displayed
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching form:', error);
+        toast.error('Failed to load form. Please try again.');
+        setIsLoading(false);
+      }
     };
 
-    fetchForm();
-  }, [slug, supabase, router, user]);
+    // Only fetch if we have a slug
+    if (slug) {
+      fetchForm();
+    }
+  }, [slug, supabase, router]); // Removed user from dependencies - form should load regardless of user state
 
   const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
   const currentQuestion = questions[currentIndex];
@@ -422,7 +446,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         )}
 
         {/* Question */}
-        {currentQuestion && (
+        {currentQuestion ? (
           <div 
             className={cn(cardClasses, "p-4 sm:p-6")}
             style={{ backgroundColor: theme.cardBackground }}
@@ -461,7 +485,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               theme={theme}
             />
           </div>
-        )}
+        ) : questions.length === 0 ? (
+          <div 
+            className={cn(cardClasses, "p-4 sm:p-6 text-center")}
+            style={{ backgroundColor: theme.cardBackground }}
+          >
+            <p style={{ color: theme.answerTextColor }}>
+              {t('noQuestions') || 'This form has no questions yet.'}
+            </p>
+          </div>
+        ) : null}
 
         {/* Navigation */}
         {questions.length > 0 && (
