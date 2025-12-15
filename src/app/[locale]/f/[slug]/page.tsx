@@ -24,7 +24,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const router = useRouter();
   const { user } = useAuthStore();
   const supabase = createClient();
-  
+
   const [form, setForm] = useState<Form | null>(null);
   const [questions, setQuestions] = useState<FormQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,13 +42,13 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
     const fetchForm = async () => {
       try {
         setIsLoading(true);
-        
+
         // Get current user from store (may be null if not logged in or still loading)
         const currentUser = useAuthStore.getState().user;
-        
+
         // Track view event
         const sessionId = crypto.randomUUID();
-        
+
         // Fetch form
         const { data: formData, error: formError } = await supabase
           .from('forms')
@@ -79,7 +79,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         setForm(formData);
         setQuestions(questionsData || []);
-        
+
         // Load theme from form settings
         if (formData.settings && typeof formData.settings === 'object') {
           const settings = formData.settings as { theme?: FormTheme };
@@ -87,7 +87,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
             setTheme(settings.theme);
           }
         }
-        
+
         // Track view event (non-blocking)
         supabase.from('form_events').insert({
           form_id: slug,
@@ -95,7 +95,9 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           session_id: sessionId,
           user_id: currentUser?.id || null,
           metadata: { referrer: typeof document !== 'undefined' ? document.referrer : '' },
-        }).catch(err => console.error('Failed to track view event:', err));
+        }).then(({ error }) => {
+          if (error) console.error('Failed to track view event:', error);
+        });
 
         // Create response record (non-blocking)
         const { data: responseData, error: responseError } = await supabase
@@ -110,14 +112,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         if (responseData) {
           setResponseId(responseData.id);
-          
+
           // Track start event (non-blocking)
           supabase.from('form_events').insert({
             form_id: slug,
             event_type: 'start',
             session_id: sessionId,
             user_id: currentUser?.id || null,
-          }).catch(err => console.error('Failed to track start event:', err));
+          }).then(({ error }) => {
+            if (error) console.error('Failed to track start event:', error);
+          });
         } else if (responseError) {
           console.error('Failed to create response record:', responseError);
           // Continue anyway - form can still be displayed
@@ -152,11 +156,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const canProceed = () => {
     if (!currentQuestion) return false;
     if (!currentQuestion.required) return true;
-    
+
     const answer = answers[currentQuestion.id];
     if (answer === undefined || answer === null || answer === '') return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
-    
+
     return true;
   };
 
@@ -174,12 +178,12 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
   const handleSubmit = async () => {
     if (!canProceed() || !responseId) return;
-    
+
     setIsSubmitting(true);
 
     try {
       const durationSec = Math.floor((Date.now() - startTime) / 1000);
-      
+
       // Insert answers
       const answersToInsert = Object.entries(answers).map(([questionId, answer]) => ({
         response_id: responseId,
@@ -191,7 +195,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
       // Update response with completion
       const qualityScore = Math.min(1.0, durationSec / (questions.length * 10)); // Basic quality score
-      
+
       await supabase
         .from('responses')
         .update({
@@ -228,11 +232,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           .select('credits_balance')
           .eq('id', user.id)
           .single();
-        
+
         await supabase
           .from('profiles')
-          .update({ 
-            credits_balance: (currentProfile?.credits_balance || 0) + totalCredits 
+          .update({
+            credits_balance: (currentProfile?.credits_balance || 0) + totalCredits
           })
           .eq('id', user.id);
 
@@ -271,29 +275,29 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
   if (isSubmitted) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center p-3 sm:p-4"
-        style={{ 
+        style={{
           backgroundColor: theme.backgroundColor,
           fontFamily: `"${theme.fontFamily}", system-ui, sans-serif`,
           paddingTop: "max(1rem, env(safe-area-inset-top))",
           paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
         }}
       >
-        <div 
+        <div
           className="w-full max-w-md rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center border"
-          style={{ 
+          style={{
             backgroundColor: theme.cardBackground,
             borderColor: theme.primaryColor + '30'
           }}
         >
-          <div 
+          <div
             className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
             style={{ backgroundColor: '#22c55e20' }}
           >
             <CheckCircle className="w-10 h-10" style={{ color: '#4ade80' }} />
           </div>
-          <h2 
+          <h2
             className="text-2xl font-semibold mb-2"
             style={{ color: theme.questionTextColor }}
           >
@@ -302,12 +306,12 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           <p className="mb-6" style={{ color: theme.answerTextColor }}>
             {t('thankYouMessage')}
           </p>
-          
+
           {creditsEarned > 0 && (
-            <div 
+            <div
               className="rounded-xl p-4 mb-6"
-              style={{ 
-                background: `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.accentColor}20)` 
+              style={{
+                background: `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.accentColor}20)`
               }}
             >
               <p style={{ color: theme.primaryColor }} className="font-medium">
@@ -317,17 +321,17 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           )}
 
           <div className="space-y-3">
-            <button 
+            <button
               onClick={() => router.push('/feed')}
               className="w-full py-3 rounded-lg text-white font-medium transition-all hover:opacity-90"
               style={{ backgroundColor: theme.primaryColor }}
             >
               {t('earnMore')}
             </button>
-            <button 
+            <button
               onClick={() => router.push('/')}
               className="w-full py-3 rounded-lg font-medium transition-all border hover:opacity-80"
-              style={{ 
+              style={{
                 borderColor: theme.primaryColor + '50',
                 color: theme.questionTextColor,
                 backgroundColor: 'transparent'
@@ -359,9 +363,9 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   );
 
   return (
-    <div 
+    <div
       className="min-h-screen"
-      style={{ 
+      style={{
         backgroundColor: theme.backgroundColor,
         fontFamily: `"${theme.fontFamily}", system-ui, sans-serif`,
         paddingTop: "env(safe-area-inset-top)",
@@ -369,22 +373,22 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
       }}
     >
       {/* Header Banner */}
-      <div 
+      <div
         className="h-2 w-full"
         style={{ backgroundColor: theme.headerColor }}
       />
 
       {/* Header */}
-      <header 
+      <header
         className="border-b backdrop-blur-xl sticky top-0 z-10"
-        style={{ 
+        style={{
           borderColor: theme.primaryColor + '20',
           backgroundColor: theme.cardBackground + '80'
         }}
       >
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <div 
+            <div
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: theme.headerColor }}
             >
@@ -403,11 +407,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
       <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {/* Form Header */}
-        <div 
+        <div
           className={cn(cardClasses, "mb-4 sm:mb-6 p-4 sm:p-6")}
           style={{ backgroundColor: theme.cardBackground }}
         >
-          <h1 
+          <h1
             className="text-xl sm:text-2xl font-bold mb-1.5 sm:mb-2 leading-tight"
             style={{ color: theme.questionTextColor }}
           >
@@ -423,20 +427,20 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         {/* Progress */}
         {questions.length > 0 && (
           <div className="mb-4 sm:mb-6">
-            <div 
+            <div
               className="flex items-center justify-between text-xs sm:text-sm mb-1.5 sm:mb-2"
               style={{ color: theme.answerTextColor }}
             >
               <span>{t('progress', { current: currentIndex + 1, total: questions.length })}</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div 
+            <div
               className="h-2 sm:h-2.5 rounded-full overflow-hidden"
               style={{ backgroundColor: theme.primaryColor + '30' }}
             >
-              <div 
+              <div
                 className="h-full transition-all duration-300"
-                style={{ 
+                style={{
                   width: `${progress}%`,
                   backgroundColor: theme.primaryColor
                 }}
@@ -447,21 +451,21 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         {/* Question */}
         {currentQuestion ? (
-          <div 
+          <div
             className={cn(cardClasses, "p-4 sm:p-6")}
             style={{ backgroundColor: theme.cardBackground }}
           >
             <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
-              <h2 
+              <h2
                 className="text-base sm:text-lg font-semibold leading-tight flex-1"
                 style={{ color: theme.questionTextColor }}
               >
                 {currentQuestion.title}
               </h2>
               {currentQuestion.required && (
-                <span 
+                <span
                   className="px-2 py-1 text-[10px] sm:text-xs rounded-full shrink-0"
-                  style={{ 
+                  style={{
                     backgroundColor: '#ef444420',
                     color: '#f87171'
                   }}
@@ -471,7 +475,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               )}
             </div>
             {currentQuestion.description && (
-              <p 
+              <p
                 className="mb-3 sm:mb-4 text-xs sm:text-sm leading-relaxed"
                 style={{ color: theme.answerTextColor }}
               >
@@ -486,7 +490,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
             />
           </div>
         ) : questions.length === 0 ? (
-          <div 
+          <div
             className={cn(cardClasses, "p-4 sm:p-6 text-center")}
             style={{ backgroundColor: theme.cardBackground }}
           >
@@ -507,7 +511,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 "text-sm sm:text-base",
                 currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "active:opacity-80"
               )}
-              style={{ 
+              style={{
                 borderColor: theme.primaryColor + '50',
                 color: theme.questionTextColor,
                 backgroundColor: 'transparent'
@@ -516,7 +520,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Previous</span>
             </button>
-            
+
             {currentIndex < questions.length - 1 ? (
               <button
                 onClick={goNext}
@@ -532,7 +536,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
-              <button 
+              <button
                 onClick={handleSubmit}
                 disabled={!canProceed() || isSubmitting}
                 className={cn(
