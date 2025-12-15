@@ -812,7 +812,7 @@ export function HeroWave({
 
     // Defer Three.js initialization to avoid blocking main thread
     // Wait for initial render and use requestIdleCallback if available
-    let cleanup: (() => void) | null = null;
+    let cleanup: (() => void) | undefined = undefined;
     
     const startInit = () => {
       if (!containerRef.current || !waveRef.current) return;
