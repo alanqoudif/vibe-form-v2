@@ -19,7 +19,7 @@ export async function generateMetadata({
     return {};
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Fetch form data for metadata
   const { data: form } = await supabase
@@ -66,7 +66,7 @@ export default async function FormLayout({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const { data: form } = await supabase
     .from('forms')

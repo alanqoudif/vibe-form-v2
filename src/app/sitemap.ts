@@ -5,7 +5,7 @@ import { routing } from '@/i18n/routing';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vibeform.pro';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Static pages with SEO optimization
   const staticPages: MetadataRoute.Sitemap = [
