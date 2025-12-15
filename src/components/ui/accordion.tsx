@@ -64,7 +64,7 @@ interface AccordionItemProps {
   className?: string
 }
 
-export function AccordionItem({ value, children, className }: AccordionItemProps) {
+function AccordionItemBase({ value, children, className }: AccordionItemProps) {
   return (
     <div className={cn("border rounded-lg", className)} data-value={value}>
       {children}
@@ -140,9 +140,9 @@ const ItemContext = React.createContext<{ value: string } | null>(null)
 const AccordionItemWithContext = ({ value, children, className }: AccordionItemProps) => {
   return (
     <ItemContext.Provider value={{ value }}>
-      <AccordionItem value={value} className={className}>
+      <AccordionItemBase value={value} className={className}>
         {children}
-      </AccordionItem>
+      </AccordionItemBase>
     </ItemContext.Provider>
   )
 }
