@@ -132,7 +132,12 @@ export function HeroWave({
   useEffect(() => {
     if (!containerRef.current || !waveRef.current) return;
 
-    // --- Shaders ---
+    // Defer Three.js initialization to avoid blocking main thread
+    // Initialize after initial render and when browser is idle
+    const initThreeJS = () => {
+      if (!containerRef.current || !waveRef.current) return;
+
+      // --- Shaders ---
     const FilmGrainShader = {
       uniforms: {
         tDiffuse: { value: null as THREE.Texture | null },
@@ -785,23 +790,45 @@ export function HeroWave({
     listeners.push(() => gsap.ticker.remove(ticker));
     listeners.push(() => ro.disconnect());
 
-    const onVisibility = () => {
-      document.hidden ? gsap.globalTimeline.pause() : gsap.globalTimeline.resume();
+      const onVisibility = () => {
+        document.hidden ? gsap.globalTimeline.pause() : gsap.globalTimeline.resume();
+      };
+      document.addEventListener("visibilitychange", onVisibility);
+      listeners.push(() => document.removeEventListener("visibilitychange", onVisibility));
+
+      return () => {
+        listeners.forEach((fn) => fn());
+        try {
+          disposeWaveScene();
+        } catch { /* ignore cleanup errors */ }
+        try {
+          const canvas = waveRenderer.domElement;
+          if (canvas && canvas.parentElement === waveContainer) {
+            waveContainer.removeChild(canvas);
+          }
+        } catch { /* ignore cleanup errors */ }
+      };
     };
-    document.addEventListener("visibilitychange", onVisibility);
-    listeners.push(() => document.removeEventListener("visibilitychange", onVisibility));
+
+    // Defer Three.js initialization to avoid blocking main thread
+    // Wait for initial render and use requestIdleCallback if available
+    let cleanup: (() => void) | null = null;
+    
+    const startInit = () => {
+      if (!containerRef.current || !waveRef.current) return;
+      cleanup = initThreeJS();
+    };
+
+    // Use requestIdleCallback if available, otherwise use a small delay
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(startInit, { timeout: 1000 });
+    } else {
+      // Fallback: small delay to allow initial render
+      setTimeout(startInit, 100);
+    }
 
     return () => {
-      listeners.forEach((fn) => fn());
-      try {
-        disposeWaveScene();
-      } catch { /* ignore cleanup errors */ }
-      try {
-        const canvas = waveRenderer.domElement;
-        if (canvas && canvas.parentElement === waveContainer) {
-          waveContainer.removeChild(canvas);
-        }
-      } catch { /* ignore cleanup errors */ }
+      if (cleanup) cleanup();
     };
   }, [extendLeftPx]);
 

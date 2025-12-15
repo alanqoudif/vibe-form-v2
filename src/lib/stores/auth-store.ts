@@ -28,46 +28,16 @@ const getSupabaseClient = () => {
   return supabaseClient;
 };
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      isLoading: true,
-      isHydrated: false,
-      isInitializing: true,
-      setUser: (user) => set({ user, isLoading: false, isInitializing: false }),
-      setLoading: (isLoading) => set({ isLoading }),
-      setHydrated: (isHydrated) => set({ isHydrated }),
-      setInitializing: (isInitializing) => set({ isInitializing }),
-      clearAuth: () => set({ user: null, isLoading: false, isInitializing: false }),
-    }),
-    {
-      name: 'vibe-auth',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ user: state.user }),
-      onRehydrateStorage: () => {
-        return (state, error) => {
-          if (error) {
-            console.error('Auth hydration error:', error);
-          }
-          // After hydration from localStorage, validate with Supabase immediately
-          if (typeof window !== 'undefined') {
-            // Start bootstrap immediately without setTimeout delay
-            bootstrapAuth();
-          }
-        };
-      },
-    }
-  )
-);
-
 // Bootstrap auth - validates session and syncs with Supabase
+// Must be defined after useAuthStore to access it
+let useAuthStoreRef: ReturnType<typeof create<AuthState>> | null = null;
+
 const bootstrapAuth = async () => {
-  if (bootstrapInitialized || typeof window === 'undefined') return;
+  if (bootstrapInitialized || typeof window === 'undefined' || !useAuthStoreRef) return;
   bootstrapInitialized = true;
 
   const supabase = getSupabaseClient();
-  const { setUser, setLoading, setHydrated, setInitializing } = useAuthStore.getState();
+  const { setUser, setLoading, setHydrated, setInitializing } = useAuthStoreRef.getState();
 
   // Mark as hydrated immediately to allow UI to render
   setHydrated(true);
@@ -107,7 +77,8 @@ const bootstrapAuth = async () => {
 
   // Listen for auth state changes
   supabase.auth.onAuthStateChange(async (event, session) => {
-    const { setUser, clearAuth } = useAuthStore.getState();
+    if (!useAuthStoreRef) return;
+    const { setUser, clearAuth } = useAuthStoreRef.getState();
 
     if (event === 'SIGNED_IN' && session?.user) {
       const { data: profile } = await supabase
@@ -135,6 +106,69 @@ const bootstrapAuth = async () => {
     }
   });
 };
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isLoading: true,
+      isHydrated: false,
+      isInitializing: true,
+      setUser: (user) => set({ user, isLoading: false, isInitializing: false }),
+      setLoading: (isLoading) => set({ isLoading }),
+      setHydrated: (isHydrated) => set({ isHydrated }),
+      setInitializing: (isInitializing) => set({ isInitializing }),
+      clearAuth: () => set({ user: null, isLoading: false, isInitializing: false }),
+    }),
+    {
+      name: 'vibe-auth',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ user: state.user }),
+      onRehydrateStorage: (state) => {
+        return (state, error) => {
+          if (error) {
+            console.error('Auth hydration error:', error);
+          }
+          // After hydration from localStorage, defer bootstrap to avoid blocking main thread
+          if (typeof window !== 'undefined') {
+            // Mark as hydrated immediately to allow UI to render
+            // Use setTimeout to ensure useAuthStore is fully initialized
+            setTimeout(() => {
+              if (useAuthStoreRef) {
+                useAuthStoreRef.getState().setHydrated(true);
+              }
+            }, 0);
+            
+            // Defer auth bootstrap until after page is interactive
+            // Use requestIdleCallback if available, otherwise use setTimeout
+            const deferBootstrap = () => {
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                  bootstrapAuth();
+                }, { timeout: 2000 }); // Max 2s delay
+              } else {
+                // Fallback for browsers without requestIdleCallback
+                setTimeout(() => {
+                  bootstrapAuth();
+                }, 100);
+              }
+            };
+            
+            // Wait for page to be interactive before starting auth check
+            if (document.readyState === 'complete') {
+              deferBootstrap();
+            } else {
+              window.addEventListener('load', deferBootstrap, { once: true });
+            }
+          }
+        };
+      },
+    }
+  )
+);
+
+// Set reference for bootstrapAuth to use
+useAuthStoreRef = useAuthStore;
 
 // For SSR safety - ensure store is initialized on client
 if (typeof window !== 'undefined') {

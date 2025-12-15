@@ -1,13 +1,31 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { HeroWave } from '@/components/ui/ai-input-hero';
 import { MyFormsSection } from '@/components/landing/my-forms-section';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useForms } from '@/lib/hooks/use-forms';
 import { toast } from 'sonner';
+
+// Lazy load HeroWave to reduce initial JavaScript bundle size
+// Three.js and GSAP will only load when this component is rendered
+const HeroWave = dynamic(
+  () => import('@/components/ui/ai-input-hero').then((mod) => ({ default: mod.HeroWave })),
+  {
+    ssr: false, // Three.js only works in browser
+    loading: () => (
+      <section className="min-h-screen bg-[#0c0c14] dark:bg-[#0c0c14] flex items-center justify-center">
+        <div className="text-center px-4">
+          <h1 className="text-white text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight">
+            {typeof window !== 'undefined' ? 'Loading...' : ''}
+          </h1>
+        </div>
+      </section>
+    ),
+  }
+);
 
 export default function HomePage() {
   const t = useTranslations('hero');

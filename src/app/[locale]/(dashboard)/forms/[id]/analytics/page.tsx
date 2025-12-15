@@ -9,19 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line
-} from 'recharts';
+import { QuestionChart } from '@/components/analytics/question-chart';
 import { 
   ArrowLeft, 
   Eye, 
@@ -428,44 +416,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        {isBar ? (
-                          <BarChart data={stats}>
-                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground" />
-                            <YAxis stroke="currentColor" className="text-muted-foreground" />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: 'hsl(var(--card))', 
-                                border: '1px solid hsl(var(--border))',
-                                borderRadius: '8px',
-                                color: 'hsl(var(--foreground))'
-                              }}
-                            />
-                            <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                          </BarChart>
-                        ) : (
-                          <PieChart>
-                            <Pie
-                              data={stats}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={60}
-                              outerRadius={80}
-                              dataKey="value"
-                              label={({ name, percent }) => 
-                                `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
-                              }
-                            >
-                              {stats.map((_, i) => (
-                                <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                          </PieChart>
-                        )}
-                      </ResponsiveContainer>
-                    </div>
+                    <QuestionChart stats={stats} isBar={isBar} colors={COLORS} />
                   </CardContent>
                 </Card>
               );
