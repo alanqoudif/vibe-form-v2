@@ -110,28 +110,32 @@ export default function FormsPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-7xl"
+      style={{
+        paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+      }}
+      >
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-1.5 sm:mb-2">
               {t('title') || 'My Forms'}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               {t('manageDescription') || 'Create, manage, and analyze your smart forms.'}
             </p>
           </div>
 
-          <Link href="/">
-            <Button>
+          <Link href="/" className="w-full md:w-auto">
+            <Button className="w-full md:w-auto min-h-[44px] touch-manipulation">
               <Plus className="w-4 h-4 mr-2" />
-              {t('createNew') || 'Create New Form'}
+              <span className="text-sm sm:text-base">{t('createNew') || 'Create New Form'}</span>
             </Button>
           </Link>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -170,31 +174,35 @@ export default function FormsPage() {
         </div>
 
         {/* Search and View Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="relative w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t('searchForms') || 'Search forms...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 sm:h-10 text-sm sm:text-base"
             />
           </div>
 
-          <div className="flex items-center gap-2 p-1 bg-muted rounded-lg">
+          <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-full sm:w-auto justify-center sm:justify-start">
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
+              className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation"
             >
               <LayoutGrid className="w-4 h-4" />
+              <span className="ml-2 sm:hidden text-xs">Grid</span>
             </Button>
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
+              className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation"
             >
               <List className="w-4 h-4" />
+              <span className="ml-2 sm:hidden text-xs">List</span>
             </Button>
           </div>
         </div>
@@ -331,20 +339,20 @@ export default function FormsPage() {
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex gap-2">
+                <CardFooter className="flex gap-2 pt-3 sm:pt-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px] touch-manipulation"
                     onClick={() => handleBoost(form.id)}
                   >
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    {t('boost') || 'Boost'}
+                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                    <span className="text-xs sm:text-sm">{t('boost') || 'Boost'}</span>
                   </Button>
                   <Link href={`/forms/${form.id}/analytics`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      {t('analytics') || 'Analytics'}
+                    <Button variant="outline" size="sm" className="w-full min-h-[44px] touch-manipulation">
+                      <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">{t('analytics') || 'Analytics'}</span>
                     </Button>
                   </Link>
                 </CardFooter>

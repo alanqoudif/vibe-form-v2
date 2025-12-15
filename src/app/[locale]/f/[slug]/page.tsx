@@ -248,14 +248,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   if (isSubmitted) {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center p-4"
+        className="min-h-screen flex items-center justify-center p-3 sm:p-4"
         style={{ 
           backgroundColor: theme.backgroundColor,
-          fontFamily: `"${theme.fontFamily}", system-ui, sans-serif`
+          fontFamily: `"${theme.fontFamily}", system-ui, sans-serif`,
+          paddingTop: "max(1rem, env(safe-area-inset-top))",
+          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
         }}
       >
         <div 
-          className="w-full max-w-md rounded-2xl p-8 text-center border"
+          className="w-full max-w-md rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center border"
           style={{ 
             backgroundColor: theme.cardBackground,
             borderColor: theme.primaryColor + '30'
@@ -337,7 +339,9 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
       className="min-h-screen"
       style={{ 
         backgroundColor: theme.backgroundColor,
-        fontFamily: `"${theme.fontFamily}", system-ui, sans-serif`
+        fontFamily: `"${theme.fontFamily}", system-ui, sans-serif`,
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       {/* Header Banner */}
@@ -348,16 +352,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
       {/* Header */}
       <header 
-        className="border-b backdrop-blur-xl"
+        className="border-b backdrop-blur-xl sticky top-0 z-10"
         style={{ 
           borderColor: theme.primaryColor + '20',
           backgroundColor: theme.cardBackground + '80'
         }}
       >
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <div 
-              className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: theme.headerColor }}
             >
               <Image
@@ -368,25 +372,25 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 className="object-contain"
               />
             </div>
-            <span style={{ color: theme.questionTextColor }} className="font-medium">Vibe Form</span>
+            <span style={{ color: theme.questionTextColor }} className="font-medium text-sm sm:text-base">Vibe Form</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
         {/* Form Header */}
         <div 
-          className={cn(cardClasses, "mb-6 p-6")}
+          className={cn(cardClasses, "mb-4 sm:mb-6 p-4 sm:p-6")}
           style={{ backgroundColor: theme.cardBackground }}
         >
           <h1 
-            className="text-2xl font-bold mb-2"
+            className="text-xl sm:text-2xl font-bold mb-1.5 sm:mb-2 leading-tight"
             style={{ color: theme.questionTextColor }}
           >
             {form?.title}
           </h1>
           {form?.description && (
-            <p style={{ color: theme.answerTextColor }}>
+            <p className="text-sm sm:text-base leading-relaxed" style={{ color: theme.answerTextColor }}>
               {form.description}
             </p>
           )}
@@ -394,16 +398,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         {/* Progress */}
         {questions.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <div 
-              className="flex items-center justify-between text-sm mb-2"
+              className="flex items-center justify-between text-xs sm:text-sm mb-1.5 sm:mb-2"
               style={{ color: theme.answerTextColor }}
             >
               <span>{t('progress', { current: currentIndex + 1, total: questions.length })}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <div 
-              className="h-2 rounded-full overflow-hidden"
+              className="h-2 sm:h-2.5 rounded-full overflow-hidden"
               style={{ backgroundColor: theme.primaryColor + '30' }}
             >
               <div 
@@ -420,19 +424,19 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
         {/* Question */}
         {currentQuestion && (
           <div 
-            className={cn(cardClasses, "p-6")}
+            className={cn(cardClasses, "p-4 sm:p-6")}
             style={{ backgroundColor: theme.cardBackground }}
           >
-            <div className="flex items-start justify-between gap-2 mb-4">
+            <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
               <h2 
-                className="text-lg font-semibold"
+                className="text-base sm:text-lg font-semibold leading-tight flex-1"
                 style={{ color: theme.questionTextColor }}
               >
                 {currentQuestion.title}
               </h2>
               {currentQuestion.required && (
                 <span 
-                  className="px-2 py-1 text-xs rounded-full"
+                  className="px-2 py-1 text-[10px] sm:text-xs rounded-full shrink-0"
                   style={{ 
                     backgroundColor: '#ef444420',
                     color: '#f87171'
@@ -444,7 +448,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
             </div>
             {currentQuestion.description && (
               <p 
-                className="mb-4 text-sm"
+                className="mb-3 sm:mb-4 text-xs sm:text-sm leading-relaxed"
                 style={{ color: theme.answerTextColor }}
               >
                 {currentQuestion.description}
@@ -461,13 +465,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         {/* Navigation */}
         {questions.length > 0 && (
-          <div className="flex justify-between mt-6">
+          <div className="flex justify-between gap-2 sm:gap-3 mt-4 sm:mt-6">
             <button
               onClick={goPrev}
               disabled={currentIndex === 0}
               className={cn(
-                "flex items-center gap-2 px-6 py-2 rounded-lg border transition-all",
-                currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:opacity-80"
+                "flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-3 sm:py-2.5 rounded-lg border transition-all min-h-[44px] touch-manipulation",
+                "text-sm sm:text-base",
+                currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "active:opacity-80"
               )}
               style={{ 
                 borderColor: theme.primaryColor + '50',
@@ -476,7 +481,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
               }}
             >
               <ArrowLeft className="w-4 h-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </button>
             
             {currentIndex < questions.length - 1 ? (
@@ -484,12 +489,13 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 onClick={goNext}
                 disabled={!canProceed()}
                 className={cn(
-                  "flex items-center gap-2 px-6 py-2 rounded-lg text-white font-medium transition-all",
-                  !canProceed() ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
+                  "flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-3 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
+                  "text-sm sm:text-base flex-1 sm:flex-initial",
+                  !canProceed() ? "opacity-50 cursor-not-allowed" : "active:opacity-90"
                 )}
                 style={{ backgroundColor: theme.primaryColor }}
               >
-                Next
+                <span>Next</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
@@ -497,15 +503,16 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 onClick={handleSubmit}
                 disabled={!canProceed() || isSubmitting}
                 className={cn(
-                  "flex items-center gap-2 px-6 py-2 rounded-lg text-white font-medium transition-all",
-                  (!canProceed() || isSubmitting) ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
+                  "flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
+                  "text-sm sm:text-base flex-1 sm:flex-initial",
+                  (!canProceed() || isSubmitting) ? "opacity-50 cursor-not-allowed" : "active:opacity-90"
                 )}
                 style={{ backgroundColor: '#22c55e' }}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Submitting...
+                    <span className="hidden sm:inline">Submitting...</span>
                   </>
                 ) : (
                   t('submit')

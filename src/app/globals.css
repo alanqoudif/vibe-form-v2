@@ -526,3 +526,113 @@ textarea::placeholder {
 .dark .glass-button-shadow {
   background: rgba(0, 0, 0, 0.3);
 }
+
+/* Mobile Utilities */
+@layer utilities {
+  /* Touch-friendly interactions */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Safe area insets for modern phones */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Minimum touch target size (44x44px recommended by Apple/Google) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Responsive typography */
+  .text-responsive {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+
+  .text-responsive-lg {
+    font-size: clamp(1.125rem, 3vw, 1.5rem);
+  }
+
+  .text-responsive-xl {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+  }
+
+  .text-responsive-2xl {
+    font-size: clamp(1.875rem, 5vw, 3rem);
+  }
+
+  /* Mobile-first spacing */
+  .mobile-padding {
+    padding: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-padding {
+      padding: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-padding {
+      padding: 1.5rem;
+    }
+  }
+
+  /* Prevent text size adjustment on iOS */
+  @supports (-webkit-touch-callout: none) {
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+  }
+
+  /* Smooth scrolling on mobile */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Better focus styles for mobile */
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Disable hover effects on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    .hover\:scale-105:hover {
+      transform: none;
+    }
+    
+    .hover\:opacity-90:hover {
+      opacity: 1;
+    }
+  }
+
+  /* Mobile-specific grid adjustments */
+  @media (max-width: 640px) {
+    .grid-responsive {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Prevent pull-to-refresh on mobile (if needed) */
+  body {
+    overscroll-behavior-y: contain;
+  }
+}

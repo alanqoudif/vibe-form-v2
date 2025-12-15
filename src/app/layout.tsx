@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   description: "Turn your ideas into professional surveys in seconds. Get responses from our community.",
   keywords: ["forms", "surveys", "AI", "questionnaire", "feedback", "research"],
   authors: [{ name: "Vibe Form" }],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: "cover",
+  },
   openGraph: {
     title: "Vibe Form - Create Forms with AI",
     description: "Turn your ideas into professional surveys in seconds.",

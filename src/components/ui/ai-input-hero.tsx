@@ -251,8 +251,12 @@ export function HeroWave({
     // --- THREE.js Setup ---
     let DPR_CAP = 2;
     const mm = gsap.matchMedia();
+    // Reduce quality on mobile devices for better performance
+    mm.add("(max-width: 768px)", () => {
+      DPR_CAP = 1;
+    });
     mm.add("(max-resolution: 180dpi)", () => {
-      DPR_CAP = 1.5;
+      DPR_CAP = Math.min(DPR_CAP, 1.5);
     });
     const EFFECT_PR = Math.min(window.devicePixelRatio, DPR_CAP) * 0.5;
 
@@ -826,44 +830,47 @@ export function HeroWave({
           alignItems: "center",
           justifyContent: "center",
           pointerEvents: "none",
-          padding: "24px",
+          padding: "16px",
+          paddingTop: "max(16px, env(safe-area-inset-top))",
+          paddingBottom: "max(16px, env(safe-area-inset-bottom))",
         }}
+        className="sm:p-6"
       >
         <div
           className="max-w-3xl w-full text-center"
           style={{ pointerEvents: "auto" }}
         >
-          <h1 className="text-white text-3xl sm:text-5xl font-semibold tracking-tight drop-shadow-[0_1px_8px_rgba(31,61,188,0.25)]">
+          <h1 className="text-white text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight drop-shadow-[0_1px_8px_rgba(31,61,188,0.25)] px-2">
             {title}
           </h1>
-          <p className="text-gray-300/90 mt-3 sm:mt-4 text-sm sm:text-base max-w-xl mx-auto">
+          <p className="text-gray-300/90 mt-2 sm:mt-3 md:mt-4 text-xs sm:text-sm md:text-base max-w-xl mx-auto px-2 leading-relaxed">
             {subtitle}
           </p>
           <form
-            className="mt-6 sm:mt-8 flex items-center justify-center"
+            className="mt-4 sm:mt-6 md:mt-8 flex items-center justify-center px-2"
             onSubmit={handleSubmit}
           >
             <div className="relative w-full sm:w-[720px]">
-              <div className="relative rounded-2xl p-[2px] shadow-[0_1px_2px_0_rgba(0,0,0,0.06)] bg-gradient-to-br from-white/10 via-white/5 to-black/20">
+              <div className="relative rounded-xl sm:rounded-2xl p-[2px] shadow-[0_1px_2px_0_rgba(0,0,0,0.06)] bg-gradient-to-br from-white/10 via-white/5 to-black/20">
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder={animatedPlaceholder}
-                  rows={5}
+                  rows={4}
                   disabled={isLoading}
-                  className="w-full h-32 sm:h-36 resize-none rounded-2xl bg-[rgba(15,15,20,0.65)] border border-white/10 text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 backdrop-blur-md px-4 py-4 pr-16 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-28 sm:h-32 md:h-36 resize-none rounded-xl sm:rounded-2xl bg-[rgba(15,15,20,0.65)] border border-white/10 text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 backdrop-blur-md px-3 sm:px-4 py-3 sm:py-4 pr-12 sm:pr-16 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading || !prompt.trim()}
                 aria-label={buttonText}
-                className="absolute right-3 bottom-3 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 inline-flex items-center justify-center w-11 h-11 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white hover:opacity-90 active:opacity-80 transition-all disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
               >
                 {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
-                  <ArrowUpRight className="w-5 h-5" />
+                  <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </button>
             </div>

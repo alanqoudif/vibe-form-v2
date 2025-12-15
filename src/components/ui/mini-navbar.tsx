@@ -39,9 +39,9 @@ function LanguageSelector() {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "group flex items-center gap-2 px-3 py-2 text-sm rounded-xl transition-all duration-300",
-            "text-muted-foreground hover:text-foreground",
-            "hover:bg-muted/80 active:scale-95",
+            "group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-sm rounded-xl transition-all duration-300",
+            "text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] justify-center sm:justify-start",
+            "hover:bg-muted/80 active:scale-95 touch-manipulation",
             "border border-transparent hover:border-border/50",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             "data-[state=open]:bg-muted data-[state=open]:text-foreground data-[state=open]:border-border/50"
@@ -98,8 +98,8 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "group flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl transition-all duration-300",
-            "hover:bg-muted/80 active:scale-95",
+            "group flex items-center gap-2 sm:gap-2.5 px-2 sm:px-2.5 py-1.5 rounded-xl transition-all duration-300",
+            "hover:bg-muted/80 active:scale-95 min-h-[44px] touch-manipulation",
             "border border-transparent hover:border-border/50",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             "data-[state=open]:bg-muted data-[state=open]:border-border/50"
@@ -207,16 +207,20 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
       isHero 
         ? "bg-transparent" 
         : "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm shadow-black/5"
-    )}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between h-16">
+    )}
+    style={{
+      paddingTop: "env(safe-area-inset-top)",
+    }}
+    >
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <nav className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group relative">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group relative min-h-[44px] min-w-[44px] items-center justify-center sm:justify-start">
             <div className={cn(
-              "relative w-10 h-10 rounded-xl overflow-hidden",
+              "relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden",
               "flex items-center justify-center shadow-lg shadow-primary/20",
               "group-hover:scale-110 group-active:scale-95 transition-all duration-300",
-              "group-hover:shadow-xl group-hover:shadow-primary/30"
+              "group-hover:shadow-xl group-hover:shadow-primary/30 touch-manipulation"
             )}>
               <Image
                 src="/fonts/vibe form logo.png"
@@ -228,7 +232,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
               />
             </div>
             <span className={cn(
-              "font-display font-bold text-xl hidden sm:block transition-all duration-300",
+              "font-display font-bold text-lg sm:text-xl hidden sm:block transition-all duration-300",
               "bg-gradient-to-r bg-clip-text",
               isHero 
                 ? "text-white group-hover:text-white/90" 
@@ -267,7 +271,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <LanguageSelector />
             
             {/* Only show auth UI after client-side hydration to prevent mismatch */}
@@ -281,8 +285,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                       href="/login"
                       className={cn(
                         "px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300",
-                        "hover:scale-105 active:scale-95",
-                        "border border-border/50",
+                        "hover:scale-105 active:scale-95 min-h-[44px] flex items-center",
+                        "border border-border/50 touch-manipulation",
                         isHero 
                           ? "text-white/90 hover:text-white hover:bg-white/10 hover:border-white/20"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -292,7 +296,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                     </Link>
                     <Link 
                       href="/signup"
-                      className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary via-primary to-purple-600 rounded-xl hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                      className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary via-primary to-purple-600 rounded-xl hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 min-h-[44px] flex items-center touch-manipulation"
                     >
                       {t('signup')}
                     </Link>
@@ -310,8 +314,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
             <button 
               className={cn(
                 "md:hidden p-2.5 rounded-xl transition-all duration-300",
-                "hover:scale-110 active:scale-95",
-                "border border-transparent hover:border-border/50",
+                "hover:scale-110 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center",
+                "border border-transparent hover:border-border/50 touch-manipulation",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isHero 
                   ? "text-white/90 hover:text-white hover:bg-white/10"
@@ -340,9 +344,12 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
             "md:hidden overflow-hidden transition-all duration-500 ease-in-out",
             isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
           )}
+          style={{
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
         >
           <div className={cn(
-            "py-4 border-t",
+            "py-3 sm:py-4 border-t",
             isHero 
               ? "border-white/10 bg-black/40 backdrop-blur-2xl" 
               : "border-border/50 bg-background/95 backdrop-blur-xl"
@@ -359,8 +366,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                       setIsOpen(false);
                     }}
                     className={cn(
-                      "relative px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-300",
-                      "active:scale-95 border border-transparent",
+                      "relative px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300",
+                      "active:scale-95 border border-transparent min-h-[44px] flex items-center touch-manipulation",
                       isActive
                         ? "bg-primary/15 text-primary border-primary/20 shadow-sm shadow-primary/10"
                         : isHero
@@ -380,13 +387,13 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
               })}
               
               {isHydrated && !isLoading && !user && (
-                <div className="flex flex-col gap-2.5 pt-4 border-t border-border/50 mt-2">
+                <div className="flex flex-col gap-2.5 pt-3 sm:pt-4 border-t border-border/50 mt-2">
                   <Link 
                     href="/login"
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
-                      "active:scale-95 border",
+                      "px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
+                      "active:scale-95 border min-h-[44px] flex items-center justify-center touch-manipulation",
                       isHero 
                         ? "text-white hover:bg-white/10 border-white/20"
                         : "text-foreground hover:bg-muted/70 border-border/50"
@@ -397,7 +404,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   <Link 
                     href="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary via-primary to-purple-600 rounded-xl text-center hover:opacity-90 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/25"
+                    className="px-4 py-3.5 sm:py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary via-primary to-purple-600 rounded-xl text-center hover:opacity-90 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/25 min-h-[44px] flex items-center justify-center touch-manipulation"
                   >
                     {t('signup')}
                   </Link>

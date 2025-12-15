@@ -89,6 +89,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   const [showSaved, setShowSaved] = useState(false);
   const [showMarketplaceDialog, setShowMarketplaceDialog] = useState(false);
   const [targetResponses, setTargetResponses] = useState<number>(10);
+  const [showQuestionListSheet, setShowQuestionListSheet] = useState(false);
 
   // Fetch form and questions
   useEffect(() => {
@@ -356,14 +357,18 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
     <TooltipProvider delayDuration={300}>
       <div className="min-h-screen bg-background flex flex-col w-full max-w-[100vw] overflow-x-hidden">
         {/* Header - Simplified */}
-        <header className="border-b border-border bg-card/50 backdrop-blur-xl shrink-0 sticky top-0 z-20">
-          <div className="flex items-center px-4 gap-3 h-14">
+        <header className="border-b border-border bg-card/50 backdrop-blur-xl shrink-0 sticky top-0 z-20"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+        }}
+        >
+          <div className="flex items-center px-2 sm:px-3 md:px-4 gap-2 sm:gap-3 h-12 sm:h-14">
             {/* Back Button */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link href="/forms">
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground h-9 w-9 sm:h-10 sm:w-10 touch-manipulation">
+                    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180" />
                   </Button>
                 </Link>
               </TooltipTrigger>
@@ -372,11 +377,11 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               </TooltipContent>
             </Tooltip>
 
-            <div className="h-8 w-px bg-border" />
+            <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
 
             {/* Logo and Title */}
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                 <Image
                   src="/fonts/vibe form logo.png"
                   alt="Vibe Form Logo"
@@ -389,23 +394,23 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                 value={form?.title || ''}
                 onChange={(e) => updateForm({ title: e.target.value })}
                 placeholder={t('untitledForm') || 'Untitled Form'}
-                className="bg-transparent border-none shadow-none text-foreground font-medium placeholder:text-muted-foreground focus-visible:ring-0 max-w-md"
+                className="bg-transparent border-none shadow-none text-foreground font-medium placeholder:text-muted-foreground focus-visible:ring-0 max-w-md text-sm sm:text-base h-8 sm:h-9"
               />
               {form?.status === 'published' && (
-                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 hidden sm:inline-block">
                   {t('published')}
                 </span>
               )}
             </div>
 
           {/* Actions - Grouped */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Theme Button */}
             <Sheet open={showThemePicker} onOpenChange={setShowThemePicker}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-9 w-9">
+                    <Button variant="outline" size="icon" className="h-9 w-9 touch-manipulation hidden sm:flex">
                       <Palette className="w-4 h-4" />
                     </Button>
                   </SheetTrigger>
@@ -414,7 +419,11 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                   <p>{t('customizeTheme')}</p>
                 </TooltipContent>
               </Tooltip>
-              <SheetContent className="w-[400px] sm:w-[540px] bg-card border-border">
+              <SheetContent className="w-full sm:w-[400px] md:w-[540px] bg-card border-border"
+              style={{
+                paddingBottom: "env(safe-area-inset-bottom)",
+              }}
+              >
                 <SheetHeader>
                   <SheetTitle className="text-foreground flex items-center gap-2 font-display">
                     <Palette className="w-5 h-5" />
@@ -442,11 +451,12 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                     size="sm"
                     onClick={() => setActiveTab('edit')}
                     className={cn(
-                      "h-7 px-3 rounded-md",
+                      "h-7 sm:h-8 px-2 sm:px-3 rounded-md touch-manipulation",
                       activeTab === 'edit' ? "bg-background shadow-sm" : "hover:bg-transparent"
                     )}
                   >
-                    <LayoutGrid className="w-4 h-4" />
+                    <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline ml-1.5">{t('edit') || 'Edit'}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -460,11 +470,12 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                     size="sm"
                     onClick={() => setActiveTab('preview')}
                     className={cn(
-                      "h-7 px-3 rounded-md",
+                      "h-7 sm:h-8 px-2 sm:px-3 rounded-md touch-manipulation",
                       activeTab === 'preview' ? "bg-background shadow-sm" : "hover:bg-transparent"
                     )}
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline ml-1.5">{t('preview')}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -473,7 +484,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               </Tooltip>
             </div>
 
-            <div className="h-8 w-px bg-border hidden sm:block" />
+            <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
 
             {/* Save Button */}
             <Tooltip>
@@ -483,7 +494,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                   size="icon"
                   onClick={handleSave}
                   disabled={isSaving || !isDirty}
-                  className="h-9 w-9"
+                  className="h-9 w-9 touch-manipulation hidden sm:flex"
                 >
                   {isSaving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -505,14 +516,14 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                 <Button
                   disabled={isPublishing}
                   size="sm"
-                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground gap-2"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground gap-1.5 sm:gap-2 h-9 sm:h-9 px-3 sm:px-4 touch-manipulation"
                 >
                   {isPublishing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   )}
-                  <span className="hidden sm:inline">{t('publish')}</span>
+                  <span className="text-xs sm:text-sm">{t('publish')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
@@ -538,10 +549,10 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
             {/* More Options for published forms */}
             {form?.status === 'published' && (
               <>
-                <div className="h-8 w-px bg-border hidden sm:block" />
+                <div className="h-6 sm:h-8 w-px bg-border hidden sm:block" />
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={handleCopyLink} className="h-9 w-9">
+                    <Button variant="outline" size="icon" onClick={handleCopyLink} className="h-9 w-9 touch-manipulation hidden sm:flex">
                       <Copy className="w-4 h-4" />
                     </Button>
                   </TooltipTrigger>
@@ -552,7 +563,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <a href={`/f/${id}`} target="_blank">
-                      <Button variant="outline" size="icon" className="h-9 w-9">
+                      <Button variant="outline" size="icon" className="h-9 w-9 touch-manipulation hidden sm:flex">
                         <ExternalLink className="w-4 h-4" />
                       </Button>
                     </a>
@@ -567,12 +578,12 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Description Field */}
-        <div className="px-4 pb-3 border-t border-border/50 pt-2">
+        <div className="px-2 sm:px-3 md:px-4 pb-2 sm:pb-3 border-t border-border/50 pt-2">
           <Textarea
             value={form?.description || ''}
             onChange={(e) => updateForm({ description: e.target.value })}
             placeholder={t('formDescriptionPlaceholder') || 'Add a description for your form (optional)...'}
-            className="bg-muted/50 border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus-visible:ring-1 focus-visible:ring-ring/50 min-h-[60px] max-h-[100px] text-sm"
+            className="bg-muted/50 border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus-visible:ring-1 focus-visible:ring-ring/50 min-h-[60px] max-h-[100px] text-xs sm:text-sm"
             rows={2}
           />
         </div>
@@ -582,8 +593,8 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
         <div className="flex-1 flex overflow-hidden">
           {activeTab === 'edit' ? (
             <>
-              {/* Question List Sidebar */}
-              <aside className="w-80 border-e border-border/50 flex-shrink-0 bg-card/30 backdrop-blur-sm flex flex-col">
+              {/* Question List Sidebar - Desktop */}
+              <aside className="hidden lg:flex w-80 border-e border-border/50 flex-shrink-0 bg-card/30 backdrop-blur-sm flex flex-col">
                 <div className="p-4 border-b border-border/50 shrink-0">
                   <h2 className="font-semibold text-foreground flex items-center gap-2 font-display">
                     <LayoutGrid className="w-4 h-4" />
@@ -598,13 +609,47 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                 </div>
               </aside>
 
+              {/* Question List Sheet - Mobile */}
+              <Sheet open={showQuestionListSheet} onOpenChange={setShowQuestionListSheet}>
+                <SheetContent side="left" className="w-[320px] sm:w-[400px] bg-card border-border p-0"
+                style={{
+                  paddingBottom: "env(safe-area-inset-bottom)",
+                }}
+                >
+                  <div className="p-4 border-b border-border/50 shrink-0">
+                    <h2 className="font-semibold text-foreground flex items-center gap-2 font-display">
+                      <LayoutGrid className="w-4 h-4" />
+                      {t('questions') || 'Questions'}
+                      <span className="ml-auto text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {questions.length}
+                      </span>
+                    </h2>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <QuestionList />
+                  </div>
+                </SheetContent>
+              </Sheet>
+
               {/* Question Editor */}
               <main className="flex-1 overflow-hidden bg-muted/20 relative">
+                {/* Mobile: Button to open Question List */}
+                <div className="lg:hidden absolute top-4 left-4 z-10">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowQuestionListSheet(true)}
+                    className="bg-background/90 backdrop-blur-sm border-border shadow-sm touch-manipulation min-h-[44px]"
+                  >
+                    <LayoutGrid className="w-4 h-4 mr-2" />
+                    {t('questions') || 'Questions'} ({questions.length})
+                  </Button>
+                </div>
                 <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
                 <QuestionEditor />
               </main>
 
-              {/* Mini Preview */}
+              {/* Mini Preview - Desktop Only */}
               <aside className="w-[420px] border-s border-border/50 flex-shrink-0 overflow-hidden hidden xl:flex flex-col bg-card/30 backdrop-blur-sm">
                 <div className="p-4 border-b border-border/50 flex items-center justify-between">
                   <h2 className="font-semibold text-foreground flex items-center gap-2 font-display">
@@ -617,7 +662,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                       size="sm"
                       onClick={() => setPreviewMode('desktop')}
                       className={cn(
-                        "h-6 w-6 p-0 rounded-md transition-all",
+                        "h-6 w-6 p-0 rounded-md transition-all touch-manipulation",
                         previewMode === 'desktop' ? "bg-background shadow-sm" : "hover:bg-background/50"
                       )}
                     >
@@ -628,7 +673,7 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                       size="sm"
                       onClick={() => setPreviewMode('mobile')}
                       className={cn(
-                        "h-6 w-6 p-0",
+                        "h-6 w-6 p-0 touch-manipulation",
                         previewMode === 'mobile' ? "bg-muted" : ""
                       )}
                     >
@@ -647,41 +692,45 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               </aside>
             </>
           ) : (
-            <main className="flex-1 overflow-auto bg-muted/30 p-6">
+            <main className="flex-1 overflow-auto bg-muted/30 p-3 sm:p-4 md:p-6"
+            style={{
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+            }}
+            >
               <div className="max-w-4xl mx-auto">
                 {/* Preview Controls */}
-                <div className="mb-6 flex items-center justify-center gap-2">
+                <div className="mb-4 sm:mb-6 flex items-center justify-center gap-2">
                   <div className="flex items-center rounded-lg border border-border bg-card p-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setPreviewMode('desktop')}
                       className={cn(
-                        "h-8 px-4 rounded-md gap-2",
+                        "h-8 sm:h-9 px-3 sm:px-4 rounded-md gap-1.5 sm:gap-2 touch-manipulation",
                         previewMode === 'desktop' ? "bg-muted" : ""
                       )}
                     >
-                      <Monitor className="w-4 h-4" />
-                      {t('desktop') || 'Desktop'}
+                      <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm">{t('desktop') || 'Desktop'}</span>
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setPreviewMode('mobile')}
                       className={cn(
-                        "h-8 px-4 rounded-md gap-2",
+                        "h-8 sm:h-9 px-3 sm:px-4 rounded-md gap-1.5 sm:gap-2 touch-manipulation",
                         previewMode === 'mobile' ? "bg-muted" : ""
                       )}
                     >
-                      <Smartphone className="w-4 h-4" />
-                      {t('mobile') || 'Mobile'}
+                      <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm">{t('mobile') || 'Mobile'}</span>
                     </Button>
                   </div>
                 </div>
 
                 {/* Full Preview */}
                 <div className={cn(
-                  "mx-auto transition-all duration-300 rounded-2xl overflow-hidden shadow-2xl border border-border",
+                  "mx-auto transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-border",
                   previewMode === 'mobile' ? "max-w-[375px]" : "max-w-2xl"
                 )}>
                   <FormPreview theme={theme} fullscreen />
@@ -694,7 +743,11 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
       {/* Marketplace Publish Dialog */}
       <Dialog open={showMarketplaceDialog} onOpenChange={setShowMarketplaceDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md"
+        style={{
+          paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+        }}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-primary" />

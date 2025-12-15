@@ -82,57 +82,63 @@ export default function FeedPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-7xl"
+      style={{
+        paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+      }}
+      >
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 mb-4">
-            <Gift className="w-6 h-6 text-primary" />
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+          <div className="inline-flex items-center justify-center p-2.5 sm:p-3 rounded-full bg-primary/10 mb-3 sm:mb-4">
+            <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-1.5 sm:mb-2 px-2">
             {t('earnTitle') || 'Explore & Earn'}
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-2">
             {t('earnDescription') || 'Complete surveys to earn huge rewards. Use your credits to boost your own reach.'}
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative mb-8 max-w-2xl mx-auto">
+        <div className="relative mb-4 sm:mb-6 md:mb-8 max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('searchPlaceholder') || "Search for interesting surveys..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-11 sm:h-10 text-sm sm:text-base"
           />
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="flex justify-center">
-            <TabsList>
-              <TabsTrigger value="needs">
-                <Target className="w-4 h-4 mr-2" />
-                {t('needsResponses')}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <div className="flex justify-center overflow-x-auto pb-2 -mx-3 sm:mx-0 px-3 sm:px-0">
+            <TabsList className="w-full sm:w-auto min-w-full sm:min-w-0">
+              <TabsTrigger value="needs" className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation text-xs sm:text-sm">
+                <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                <span className="hidden xs:inline">{t('needsResponses')}</span>
+                <span className="xs:hidden">Needs</span>
               </TabsTrigger>
-              <TabsTrigger value="trending">
-                <TrendingUp className="w-4 h-4 mr-2" />
+              <TabsTrigger value="trending" className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation text-xs sm:text-sm">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                 {t('trending')}
               </TabsTrigger>
-              <TabsTrigger value="new">
-                <Sparkles className="w-4 h-4 mr-2" />
+              <TabsTrigger value="new" className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation text-xs sm:text-sm">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                 {t('new')}
               </TabsTrigger>
-              <TabsTrigger value="foryou">
-                <Zap className="w-4 h-4 mr-2" />
-                {t('forYou')}
+              <TabsTrigger value="foryou" className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation text-xs sm:text-sm">
+                <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                <span className="hidden xs:inline">{t('forYou')}</span>
+                <span className="xs:hidden">You</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value={activeTab}>
             {isFormsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {[1, 2, 3, 4, 5, 6].map(i => (
                   <Card key={i}>
                     <CardHeader>
@@ -147,20 +153,20 @@ export default function FeedPage() {
               </div>
             ) : filteredForms.length === 0 ? (
               <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Sparkles className="w-8 h-8 text-muted-foreground" />
+                <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center mb-3 sm:mb-4">
+                    <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 text-center">
                     {t('noForms') || 'No surveys found'}
                   </h3>
-                  <p className="text-muted-foreground text-center">
+                  <p className="text-sm sm:text-base text-muted-foreground text-center">
                     {t('checkLater') || 'Try adjusting your filters or check back later.'}
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {filteredForms.map((form) => (
                   <Card key={form.id} className="flex flex-col">
                     <CardHeader>
@@ -219,11 +225,11 @@ export default function FeedPage() {
                       )}
                     </CardContent>
 
-                    <CardFooter>
+                    <CardFooter className="pt-3 sm:pt-4">
                       <Link href={`/f/${form.id}`} className="w-full">
-                        <Button className="w-full">
+                        <Button className="w-full min-h-[44px] touch-manipulation text-sm sm:text-base">
                           {t('answerAndEarn') || 'Answer & Earn'}
-                          <ArrowRight className="w-4 h-4 ml-2" />
+                          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1.5 sm:ml-2" />
                         </Button>
                       </Link>
                     </CardFooter>

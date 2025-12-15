@@ -103,21 +103,21 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
   }
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-muted/30">
+    <section className="py-12 sm:py-16 px-3 sm:px-4 md:px-6 lg:px-8 bg-gradient-to-b from-transparent to-muted/30">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-            <FileText className="w-6 h-6" />
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-1.5 sm:gap-2">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
             {t('title')}
           </h2>
           <Link href="/forms">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground text-xs sm:text-sm min-h-[44px] touch-manipulation hidden sm:flex">
               View All
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {forms.map((form, index) => (
             <Card
               key={form.id}
@@ -161,21 +161,21 @@ export function MyFormsSection({ forms, isLoading }: MyFormsSectionProps) {
                 <Link href={`/forms/${form.id}/analytics`} className="flex-1">
                   <Button
                     variant="ghost"
-                    className="w-full text-muted-foreground hover:text-foreground hover:bg-muted"
+                    className="w-full text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] touch-manipulation"
                     size="sm"
                   >
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    {t('viewAnalytics')}
+                    <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                    <span className="text-xs sm:text-sm">{t('viewAnalytics')}</span>
                   </Button>
                 </Link>
                 <Link href={`/forms/${form.id}/builder`} className="flex-1">
                   <Button
                     variant="ghost"
-                    className="w-full text-muted-foreground hover:text-foreground hover:bg-muted"
+                    className="w-full text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] touch-manipulation"
                     size="sm"
                   >
-                    <Edit3 className="w-4 h-4 mr-2" />
-                    {t('editForm')}
+                    <Edit3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                    <span className="text-xs sm:text-sm">{t('editForm')}</span>
                   </Button>
                 </Link>
               </CardFooter>
