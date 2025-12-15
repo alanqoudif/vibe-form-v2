@@ -275,7 +275,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
             {/* GitHub & Deploy Links */}
             <div className="hidden sm:flex items-center gap-1.5">
               <a
-                href="https://github.com/YOUR_USERNAME/vibe-form-v2"
+                href="https://github.com/alanqoudif/vibe-form-v2"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
@@ -293,7 +293,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                 <Github className="w-5 h-5" />
               </a>
               <a
-                href="https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/vibe-form-v2"
+                href="https://vercel.com/new/clone?repository-url=https://github.com/alanqoudif/vibe-form-v2"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
@@ -429,7 +429,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
               {/* Mobile GitHub & Deploy Links */}
               <div className="flex flex-col gap-2.5 pt-3 sm:pt-4 border-t border-border/50 mt-2">
                 <a
-                  href="https://github.com/YOUR_USERNAME/vibe-form-v2"
+                  href="https://github.com/alanqoudif/vibe-form-v2"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}
@@ -445,7 +445,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   {t('viewSource')}
                 </a>
                 <a
-                  href="https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/vibe-form-v2"
+                  href="https://vercel.com/new/clone?repository-url=https://github.com/alanqoudif/vibe-form-v2"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}
