@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Next.js App Router with i18n routing
+# The Netlify plugin automatically handles:
+# - Server-side rendering
+# - API routes
+# - Dynamic routes with [locale] segments
+# - Static file serving
+
