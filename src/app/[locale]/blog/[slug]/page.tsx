@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { generateMetadata as generateSEOMetadata } from '@/lib/seo/metadata';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/seo/structured-data';
 import { routing } from '@/i18n/routing';
-import { Card, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Calendar, Clock, ArrowLeft } from 'lucide-react';
