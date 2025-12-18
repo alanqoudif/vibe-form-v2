@@ -71,88 +71,114 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
   const [cachedInsights, setCachedInsights] = useState<{ insights: AIInsights; generatedAt: string; responseCount: number } | null>(null);
 
   useEffect(() => {
+    if (!id) return;
+
+    let isMounted = true;
+
     const fetchData = async () => {
-      // Fetch form
-      const { data: formData } = await supabase
-        .from('forms')
-        .select('*')
-        .eq('id', id)
-        .single();
+      setIsLoading(true);
 
-      if (!formData) {
-        toast.error('Form not found');
-        return;
-      }
+      try {
+        // Fetch form
+        const { data: formData, error: formError } = await supabase
+          .from('forms')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-      setForm(formData);
+        if (!isMounted) return;
 
-      // Check for cached insights
-      if (formData.analytics_snapshot && typeof formData.analytics_snapshot === 'object') {
-        const snapshot = formData.analytics_snapshot as { insights?: AIInsights; generatedAt?: string; responseCount?: number };
-        if (snapshot.insights) {
-          setCachedInsights({
-            insights: snapshot.insights,
-            generatedAt: snapshot.generatedAt || '',
-            responseCount: snapshot.responseCount || 0,
-          });
-          setInsights(snapshot.insights);
+        if (formError || !formData) {
+          toast.error('Form not found');
+          setIsLoading(false);
+          return;
         }
-      }
 
-      // Fetch questions
-      const { data: questionsData } = await supabase
-        .from('form_questions')
-        .select('*')
-        .eq('form_id', id)
-        .order('order_index');
+        setForm(formData);
 
-      setQuestions(questionsData || []);
-
-      // Fetch responses with answers
-      const { data: responsesData } = await supabase
-        .from('responses')
-        .select('*, response_answers(*)')
-        .eq('form_id', id)
-        .order('created_at', { ascending: false });
-
-      setResponses(responsesData || []);
-
-      // Fetch analytics from events
-      const { data: events } = await supabase
-        .from('form_events')
-        .select('event_type')
-        .eq('form_id', id);
-
-      const eventCounts = {
-        view: 0,
-        start: 0,
-        submit: 0,
-      };
-
-      events?.forEach(e => {
-        if (e.event_type in eventCounts) {
-          eventCounts[e.event_type as keyof typeof eventCounts]++;
+        // Check for cached insights
+        if (formData.analytics_snapshot && typeof formData.analytics_snapshot === 'object') {
+          const snapshot = formData.analytics_snapshot as { insights?: AIInsights; generatedAt?: string; responseCount?: number };
+          if (snapshot.insights) {
+            setCachedInsights({
+              insights: snapshot.insights,
+              generatedAt: snapshot.generatedAt || '',
+              responseCount: snapshot.responseCount || 0,
+            });
+            setInsights(snapshot.insights);
+          }
         }
-      });
 
-      // Calculate avg duration
-      const completedResponses = responsesData?.filter(r => r.submitted_at && r.duration_sec) || [];
-      const avgDuration = completedResponses.length > 0
-        ? completedResponses.reduce((sum, r) => sum + (r.duration_sec || 0), 0) / completedResponses.length
-        : 0;
+        // Fetch questions
+        const { data: questionsData } = await supabase
+          .from('form_questions')
+          .select('*')
+          .eq('form_id', id)
+          .order('order_index');
 
-      setAnalytics({
-        views: eventCounts.view,
-        starts: eventCounts.start,
-        submits: eventCounts.submit,
-        completionRate: eventCounts.start > 0 ? (eventCounts.submit / eventCounts.start) * 100 : 0,
-        avgDuration: Math.round(avgDuration),
-      });
+        if (!isMounted) return;
 
-      setIsLoading(false);
+        setQuestions(questionsData || []);
+
+        // Fetch responses with answers
+        const { data: responsesData } = await supabase
+          .from('responses')
+          .select('*, response_answers(*)')
+          .eq('form_id', id)
+          .order('created_at', { ascending: false });
+
+        if (!isMounted) return;
+
+        setResponses(responsesData || []);
+
+        // Fetch analytics from events
+        const { data: events } = await supabase
+          .from('form_events')
+          .select('event_type')
+          .eq('form_id', id);
+
+        if (!isMounted) return;
+
+        const eventCounts = {
+          view: 0,
+          start: 0,
+          submit: 0,
+        };
+
+        events?.forEach(e => {
+          if (e.event_type in eventCounts) {
+            eventCounts[e.event_type as keyof typeof eventCounts]++;
+          }
+        });
+
+        // Calculate avg duration
+        const completedResponses = responsesData?.filter(r => r.submitted_at && r.duration_sec) || [];
+        const avgDuration = completedResponses.length > 0
+          ? completedResponses.reduce((sum, r) => sum + (r.duration_sec || 0), 0) / completedResponses.length
+          : 0;
+
+        setAnalytics({
+          views: eventCounts.view,
+          starts: eventCounts.start,
+          submits: eventCounts.submit,
+          completionRate: eventCounts.start > 0 ? (eventCounts.submit / eventCounts.start) * 100 : 0,
+          avgDuration: Math.round(avgDuration),
+        });
+
+        setIsLoading(false);
+      } catch (error) {
+        if (!isMounted) return;
+        console.error('Error fetching analytics data:', error);
+        toast.error('Failed to load analytics data');
+        setIsLoading(false);
+      }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id, supabase]);
 
   const generateInsights = async () => {

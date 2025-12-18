@@ -19,6 +19,7 @@ interface AuthState {
 
 // Track if bootstrap has been called
 let bootstrapInitialized = false;
+let authStateChangeListener: ReturnType<typeof createClient>['auth']['onAuthStateChange'] | null = null;
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 const getSupabaseClient = () => {
@@ -29,7 +30,7 @@ const getSupabaseClient = () => {
 };
 
 // Bootstrap auth - validates session and syncs with Supabase
-// Must be defined after useAuthStore to access it
+// Simplified and optimized for faster hydration
 let useAuthStoreRef: ReturnType<typeof create<AuthState>> | null = null;
 
 const bootstrapAuth = async () => {
@@ -37,27 +38,34 @@ const bootstrapAuth = async () => {
   bootstrapInitialized = true;
 
   const supabase = getSupabaseClient();
-  const { setUser, setLoading, setHydrated, setInitializing } = useAuthStoreRef.getState();
+  const { setUser, setLoading, setInitializing } = useAuthStoreRef.getState();
 
-  // Mark as hydrated immediately to allow UI to render
-  setHydrated(true);
   setInitializing(true);
 
   try {
     // Get current session from Supabase (validates against server)
     const {
       data: { session },
+      error: sessionError,
     } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      setUser(null);
+      setLoading(false);
+      setInitializing(false);
+      return;
+    }
 
     if (session?.user) {
       // Fetch fresh profile data
-      const { data: profile, error } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      if (profile && !error) {
+      if (profile && !profileError) {
         setUser(profile);
       } else {
         // Session exists but profile doesn't - clear auth
@@ -75,36 +83,30 @@ const bootstrapAuth = async () => {
     setInitializing(false);
   }
 
-  // Listen for auth state changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (!useAuthStoreRef) return;
-    const { setUser, clearAuth } = useAuthStoreRef.getState();
+  // Set up auth state change listener only once
+  if (!authStateChangeListener) {
+    authStateChangeListener = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!useAuthStoreRef) return;
+      const { setUser, clearAuth } = useAuthStoreRef.getState();
 
-    if (event === 'SIGNED_IN' && session?.user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      if (event === 'SIGNED_IN' && session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (profile) {
-        setUser(profile);
+        if (profile) {
+          setUser(profile);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        clearAuth();
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        // Only refresh profile on token refresh if needed (optional optimization)
+        // For now, we skip to avoid unnecessary requests
       }
-    } else if (event === 'SIGNED_OUT') {
-      clearAuth();
-    } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-      // Optionally refresh profile on token refresh
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profile) {
-        setUser(profile);
-      }
-    }
-  });
+    });
+  }
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -124,42 +126,22 @@ export const useAuthStore = create<AuthState>()(
       name: 'vibe-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ user: state.user }),
-      onRehydrateStorage: (state) => {
+      onRehydrateStorage: () => {
         return (state, error) => {
           if (error) {
             console.error('Auth hydration error:', error);
           }
-          // After hydration from localStorage, defer bootstrap to avoid blocking main thread
-          if (typeof window !== 'undefined') {
-            // Mark as hydrated immediately to allow UI to render
-            // Use setTimeout to ensure useAuthStore is fully initialized
-            setTimeout(() => {
-              if (useAuthStoreRef) {
-                useAuthStoreRef.getState().setHydrated(true);
-              }
-            }, 0);
+          
+          // Mark as hydrated immediately to allow UI to render
+          // This happens synchronously after localStorage rehydration
+          if (typeof window !== 'undefined' && useAuthStoreRef) {
+            useAuthStoreRef.getState().setHydrated(true);
             
-            // Defer auth bootstrap until after page is interactive
-            // Use requestIdleCallback if available, otherwise use setTimeout
-            const deferBootstrap = () => {
-              if ('requestIdleCallback' in window) {
-                requestIdleCallback(() => {
-                  bootstrapAuth();
-                }, { timeout: 2000 }); // Max 2s delay
-              } else {
-                // Fallback for browsers without requestIdleCallback
-                setTimeout(() => {
-                  bootstrapAuth();
-                }, 100);
-              }
-            };
-            
-            // Wait for page to be interactive before starting auth check
-            if (document.readyState === 'complete') {
-              deferBootstrap();
-            } else {
-              window.addEventListener('load', deferBootstrap, { once: true });
-            }
+            // Start bootstrap immediately but don't block
+            // Use microtask to ensure it runs after current execution
+            Promise.resolve().then(() => {
+              bootstrapAuth();
+            });
           }
         };
       },

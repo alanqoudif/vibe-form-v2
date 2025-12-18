@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LocaleProvider } from "@/components/providers/locale-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { generateMetadata as generateSEOMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
@@ -38,9 +39,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background font-body`}
       >
-        <LocaleProvider>
-          {children}
-        </LocaleProvider>
+        <ErrorBoundary>
+          <LocaleProvider>
+            {children}
+          </LocaleProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

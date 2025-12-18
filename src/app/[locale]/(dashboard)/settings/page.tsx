@@ -44,13 +44,19 @@ export default function SettingsPage() {
 
   // Get email from auth session
   useEffect(() => {
+    let isMounted = true;
+
     const getEmail = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email) {
+      if (isMounted && session?.user?.email) {
         setEmail(session.user.email);
       }
     };
     getEmail();
+
+    return () => {
+      isMounted = false;
+    };
   }, [supabase]);
 
   // Update formData when user changes

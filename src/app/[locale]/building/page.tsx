@@ -31,11 +31,15 @@ function BuildingPageContent() {
             return;
         }
 
+        let isMounted = true;
+
         const createForm = async () => {
             try {
                 // Simulate steps for better UX
                 const interval = setInterval(() => {
-                    setStep(s => Math.min(s + 1, steps.length - 1));
+                    if (isMounted) {
+                        setStep(s => Math.min(s + 1, steps.length - 1));
+                    }
                 }, 1500);
 
                 const response = await fetch('/api/ai/generate-form', {
@@ -48,12 +52,16 @@ function BuildingPageContent() {
 
                 clearInterval(interval);
 
+                if (!isMounted) return;
+
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.message || 'Failed to generate form');
                 }
 
                 const { formId } = await response.json();
+
+                if (!isMounted) return;
 
                 // Invalidate queries to ensure fresh data when navigating
                 queryClient.invalidateQueries({ queryKey: ['forms'] });
@@ -62,17 +70,28 @@ function BuildingPageContent() {
                 // Final success step
                 setStep(steps.length - 1);
                 setTimeout(() => {
-                    router.push(`/forms/${formId}/builder`);
+                    if (isMounted) {
+                        router.push(`/forms/${formId}/builder`);
+                    }
                 }, 1000);
 
             } catch (error) {
+                if (!isMounted) return;
                 console.error('Error generating form:', error);
                 toast.error('Failed to generate form. Please try again.');
-                setTimeout(() => router.push('/'), 2000);
+                setTimeout(() => {
+                    if (isMounted) {
+                        router.push('/');
+                    }
+                }, 2000);
             }
         };
 
         createForm();
+
+        return () => {
+            isMounted = false;
+        };
     }, [prompt, router, queryClient]);
 
     return (

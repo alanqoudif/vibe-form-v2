@@ -9,11 +9,13 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
-            gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
-            refetchOnWindowFocus: false,
+            staleTime: 2 * 60 * 1000, // 2 minutes - increased for better caching
+            gcTime: 10 * 60 * 1000, // 10 minutes (increased from 5)
+            refetchOnWindowFocus: false, // Don't refetch on window focus
             refetchOnMount: false, // Don't refetch on mount if data exists
+            refetchOnReconnect: true, // Only refetch on reconnect
             retry: 1, // Reduce retries for faster failure handling
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
           },
         },
       })

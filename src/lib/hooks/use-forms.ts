@@ -63,9 +63,11 @@ export function useForms(limit?: number) {
     },
     // Only enable when user exists AND store is hydrated to avoid unnecessary calls
     enabled: !!user && isHydrated,
-    staleTime: 60 * 1000, // 1 minute - increased from 30s
-    gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+    staleTime: 2 * 60 * 1000, // 2 minutes - increased for better caching
+    gcTime: 10 * 60 * 1000, // 10 minutes cache (increased from 5)
     refetchOnMount: false, // Don't refetch if we have cached data
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnReconnect: true, // Only refetch on reconnect
   });
 }
 
@@ -89,8 +91,10 @@ export function useForm(formId: string) {
       return data as Form;
     },
     enabled: !!formId,
-    staleTime: 60 * 1000, // 1 minute - prevent refetching
+    staleTime: 2 * 60 * 1000, // 2 minutes - prevent refetching
     gcTime: 10 * 60 * 1000, // 10 minutes cache
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -140,37 +144,11 @@ export function usePublicForms(excludeUserId?: string) {
         query = query.neq('owner_id', excludeUserId);
       }
 
-      console.log('Fetching public forms with filters:', {
-        status: 'published',
-        visibility: 'public',
-        excludeUserId,
-      });
-
       const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching public forms:', error);
         throw error;
-      }
-
-      console.log('Fetched public forms:', data?.length || 0, 'forms');
-      if (data && data.length > 0) {
-        console.log('Sample form:', {
-          id: data[0].id,
-          title: data[0].title,
-          status: data[0].status,
-          visibility: data[0].visibility,
-        });
-        // Log all forms for debugging
-        console.log('All fetched forms:', data.map(f => ({
-          id: f.id,
-          title: f.title,
-          status: f.status,
-          visibility: f.visibility,
-          owner_id: f.owner_id,
-        })));
-      } else {
-        console.warn('No public forms found! This might indicate a problem with the query or data.');
       }
 
       return (data || []).map(form => ({
@@ -182,8 +160,10 @@ export function usePublicForms(excludeUserId?: string) {
         profiles: undefined,
       }));
     },
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
     refetchOnMount: false, // Don't refetch if we have cached data
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 }
 

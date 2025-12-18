@@ -96,7 +96,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
 
   // Fetch form and questions
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!isHydrated || !id) return;
+
+    let isMounted = true;
 
     const fetchForm = async () => {
       setIsLoading(true);
@@ -108,6 +110,8 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           .select('*')
           .eq('id', id)
           .single();
+
+        if (!isMounted) return;
 
         if (formError || !formData) {
           console.error('Error fetching form:', formError);
@@ -122,6 +126,8 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           .select('*')
           .eq('form_id', id)
           .order('order_index', { ascending: true });
+
+        if (!isMounted) return;
 
         if (questionsError) {
           console.error('Error fetching questions:', questionsError);
@@ -143,23 +149,23 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           }
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Unexpected error in fetchForm:', error);
         toast.error(t('errorLoadingForm') || 'Error loading form');
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
-
-    // Invalidate queries to ensure fresh data
-    queryClient.invalidateQueries({ queryKey: ['forms'] });
-    queryClient.invalidateQueries({ queryKey: ['form', id] });
 
     fetchForm();
 
     return () => {
+      isMounted = false;
       reset();
     };
-  }, [id, supabase, router, setForm, setQuestions, reset, t, isHydrated, queryClient]);
+  }, [id, isHydrated, router, setForm, setQuestions, reset, t, supabase]);
 
   // Save form
   const handleSave = async () => {

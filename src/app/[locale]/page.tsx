@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -37,7 +37,7 @@ export default function HomePage() {
   // Use React Query for fetching forms - much better caching and state management
   const { data: forms = [], isLoading: isLoadingForms } = useForms(6);
 
-  const handlePromptSubmit = async (prompt: string) => {
+  const handlePromptSubmit = useCallback(async (prompt: string) => {
     // Check if user is logged in
     if (!user) {
       // Redirect to login with the prompt stored
@@ -49,13 +49,14 @@ export default function HomePage() {
 
     // Redirect to the AI builder animation page
     router.push(`/building?prompt=${encodeURIComponent(prompt)}`);
-  };
+  }, [user, router, t]);
 
   // Handle pending prompt after login
   useEffect(() => {
-    const checkPendingPrompt = async () => {
-      if (!user) return;
+    // Only check if user is hydrated and exists
+    if (!isHydrated || !user) return;
 
+    const checkPendingPrompt = () => {
       const pendingPrompt = sessionStorage.getItem('pendingPrompt');
       if (pendingPrompt) {
         sessionStorage.removeItem('pendingPrompt');
@@ -65,9 +66,9 @@ export default function HomePage() {
     };
 
     // Small delay to ensure auth state is fully settled
-    const timer = setTimeout(checkPendingPrompt, 500);
+    const timer = setTimeout(checkPendingPrompt, 300);
     return () => clearTimeout(timer);
-  }, [user, router]);
+  }, [user, isHydrated, handlePromptSubmit]);
 
   const suggestions = [
     t('suggestions.fitness'),

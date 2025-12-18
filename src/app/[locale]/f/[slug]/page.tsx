@@ -39,6 +39,10 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
   // Fetch form and questions
   useEffect(() => {
+    if (!slug) return;
+
+    let isMounted = true;
+
     const fetchForm = async () => {
       try {
         setIsLoading(true);
@@ -57,10 +61,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           .eq('status', 'published')
           .single();
 
+        if (!isMounted) return;
+
         if (formError || !formData) {
           console.error('Form fetch error:', formError);
           toast.error('Form not found or not published');
-          setIsLoading(false);
           router.push('/');
           return;
         }
@@ -71,6 +76,8 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           .select('*')
           .eq('form_id', slug)
           .order('order_index', { ascending: true });
+
+        if (!isMounted) return;
 
         if (questionsError) {
           console.error('Questions fetch error:', questionsError);
@@ -110,6 +117,8 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           .select()
           .single();
 
+        if (!isMounted) return;
+
         if (responseData) {
           setResponseId(responseData.id);
 
@@ -129,17 +138,19 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         setIsLoading(false);
       } catch (error) {
+        if (!isMounted) return;
         console.error('Error fetching form:', error);
         toast.error('Failed to load form. Please try again.');
         setIsLoading(false);
       }
     };
 
-    // Only fetch if we have a slug
-    if (slug) {
-      fetchForm();
-    }
-  }, [slug, supabase, router]); // Removed user from dependencies - form should load regardless of user state
+    fetchForm();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug, supabase, router]);
 
   const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
   const currentQuestion = questions[currentIndex];
@@ -323,14 +334,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           <div className="space-y-3">
             <button
               onClick={() => router.push('/feed')}
-              className="w-full py-3 rounded-lg text-white font-medium transition-all hover:opacity-90"
+              className="w-full py-3 rounded-lg text-white font-medium transition-all hover:opacity-90 min-h-[44px] touch-manipulation"
               style={{ backgroundColor: theme.primaryColor }}
             >
               {t('earnMore')}
             </button>
             <button
               onClick={() => router.push('/')}
-              className="w-full py-3 rounded-lg font-medium transition-all border hover:opacity-80"
+              className="w-full py-3 rounded-lg font-medium transition-all border hover:opacity-80 min-h-[44px] touch-manipulation"
               style={{
                 borderColor: theme.primaryColor + '50',
                 color: theme.questionTextColor,
@@ -502,12 +513,12 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         {/* Navigation */}
         {questions.length > 0 && (
-          <div className="flex justify-between gap-2 sm:gap-3 mt-4 sm:mt-6">
+          <div className="flex justify-between gap-2 sm:gap-3 mt-4 sm:mt-6 pb-2 sm:pb-0">
             <button
               onClick={goPrev}
               disabled={currentIndex === 0}
               className={cn(
-                "flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-3 sm:py-2.5 rounded-lg border transition-all min-h-[44px] touch-manipulation",
+                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-2.5 rounded-lg border transition-all min-h-[44px] min-w-[44px] touch-manipulation",
                 "text-sm sm:text-base",
                 currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "active:opacity-80"
               )}
@@ -526,7 +537,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 onClick={goNext}
                 disabled={!canProceed()}
                 className={cn(
-                  "flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-3 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
+                  "flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
                   "text-sm sm:text-base flex-1 sm:flex-initial",
                   !canProceed() ? "opacity-50 cursor-not-allowed" : "active:opacity-90"
                 )}
@@ -540,7 +551,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 onClick={handleSubmit}
                 disabled={!canProceed() || isSubmitting}
                 className={cn(
-                  "flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
+                  "flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
                   "text-sm sm:text-base flex-1 sm:flex-initial",
                   (!canProceed() || isSubmitting) ? "opacity-50 cursor-not-allowed" : "active:opacity-90"
                 )}
