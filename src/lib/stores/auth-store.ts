@@ -19,7 +19,7 @@ interface AuthState {
 
 // Track if bootstrap has been called
 let bootstrapInitialized = false;
-let authStateChangeListener: ReturnType<typeof createClient>['auth']['onAuthStateChange'] | null = null;
+let authStateChangeListener: ReturnType<ReturnType<typeof createClient>['auth']['onAuthStateChange']> | null = null;
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 const getSupabaseClient = () => {
