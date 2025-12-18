@@ -31,7 +31,7 @@ const getSupabaseClient = () => {
 
 // Bootstrap auth - validates session and syncs with Supabase
 // Simplified and optimized for faster hydration
-let useAuthStoreRef: ReturnType<typeof create<AuthState>> | null = null;
+let useAuthStoreRef: typeof useAuthStore | null = null;
 
 const bootstrapAuth = async () => {
   if (bootstrapInitialized || typeof window === 'undefined' || !useAuthStoreRef) return;
