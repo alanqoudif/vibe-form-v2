@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { INSIGHTS_CONFIG } from '@/lib/config/ai-config';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -82,7 +81,7 @@ Provide a comprehensive analysis in JSON format with:
 Respond ONLY with valid JSON.`;
 
     const completion = await openai.chat.completions.create({
-      model: INSIGHTS_CONFIG.model,
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -93,8 +92,8 @@ Respond ONLY with valid JSON.`;
           content: prompt,
         },
       ],
-      response_format: INSIGHTS_CONFIG.responseFormat,
-      temperature: INSIGHTS_CONFIG.temperature,
+      response_format: { type: "json_object" },
+      temperature: 0.7,
     });
 
     const insights = JSON.parse(completion.choices[0].message.content || '{}');

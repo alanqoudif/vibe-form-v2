@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import OpenAI from 'openai';
-import { FORM_GENERATION_CONFIG } from '@/lib/config/ai-config';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -79,14 +78,14 @@ export async function POST(request: NextRequest) {
 
     // Generate form using OpenAI
     const completion = await openai.chat.completions.create({
-      model: FORM_GENERATION_CONFIG.model,
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: `Create a form for: ${prompt}` }
       ],
-      response_format: FORM_GENERATION_CONFIG.responseFormat,
-      temperature: FORM_GENERATION_CONFIG.temperature,
-      max_completion_tokens: FORM_GENERATION_CONFIG.maxCompletionTokens,
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 2000,
     });
 
     const responseContent = completion.choices[0]?.message?.content;
