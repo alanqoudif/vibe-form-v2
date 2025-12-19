@@ -5,15 +5,17 @@
 
 /* Custom Font Families */
 /* Note: Effra fonts are only used for Arabic - English uses system fonts for better compatibility */
+/* Secondary weights use optional to reduce layout shift */
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Light.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
+/* Primary weights use swap for better text rendering */
 @font-face {
   font-family: 'Effra';
   src: url('/fonts/Effra-Regular.otf') format('opentype');
@@ -46,11 +48,12 @@
   src: url('/fonts/Effra-Heavy.otf') format('opentype');
   font-weight: 800;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
 /* Handicrafts - Arabic display font for headings */
+/* Primary weights use swap, secondary use optional */
 @font-face {
   font-family: 'Handicrafts';
   src: url('/fonts/TheYearofHandicrafts-Regular.otf') format('opentype');
@@ -74,7 +77,7 @@
   src: url('/fonts/TheYearofHandicrafts-SemiBold.otf') format('opentype');
   font-weight: 600;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
@@ -92,7 +95,7 @@
   src: url('/fonts/TheYearofHandicrafts-Black.otf') format('opentype');
   font-weight: 900;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
   unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
 
@@ -253,6 +256,10 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    /* Optimize font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   [dir="rtl"] body {
     font-family: 'Effra', var(--font-geist-sans), system-ui, sans-serif;

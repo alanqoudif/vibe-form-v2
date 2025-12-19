@@ -3,6 +3,18 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+// Bundle analyzer - conditional import
+let withBundleAnalyzer: any = (config: NextConfig) => config;
+if (process.env.ANALYZE === 'true') {
+  try {
+    withBundleAnalyzer = require('@next/bundle-analyzer')({
+      enabled: true,
+    });
+  } catch (e) {
+    // Bundle analyzer not installed, skip
+  }
+}
+
 const nextConfig: NextConfig = {
   // Enable experimental features if needed
   experimental: {
@@ -24,8 +36,12 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-tabs',
       '@radix-ui/react-tooltip',
       'lucide-react',
+      '@tanstack/react-query',
+      'framer-motion',
     ],
   },
+  // Optimize server components - moved from experimental
+  serverExternalPackages: ['three'],
   // Image optimization for Core Web Vitals
   images: {
     remotePatterns: [
@@ -44,6 +60,10 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Optimize image loading
+    unoptimized: false,
+    // Enable modern image formats
+    loader: 'default',
   },
   // Webpack configuration for Three.js
   webpack: (config) => {
@@ -75,7 +95,7 @@ const nextConfig: NextConfig = {
           // Performance headers for Core Web Vitals
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'public, max-age=0, must-revalidate',
           },
         ],
       },
@@ -96,6 +116,16 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // Fonts caching
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
@@ -128,6 +158,8 @@ const nextConfig: NextConfig = {
   // React strict mode
   reactStrictMode: true,
   // Note: swcMinify and optimizeFonts are enabled by default in Next.js 16
+  // Enable standalone output for better deployment
+  output: 'standalone',
 };
 
-export default withNextIntl(nextConfig);
+export default withBundleAnalyzer(withNextIntl(nextConfig));

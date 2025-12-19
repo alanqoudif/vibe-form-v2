@@ -410,6 +410,8 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                   width={32}
                   height={32}
                   className="object-contain"
+                  sizes="(max-width: 640px) 28px, 32px"
+                  loading="lazy"
                 />
               </div>
               <Input

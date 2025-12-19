@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+// Use 'm' instead of 'motion' for better tree-shaking
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export const TextHoverEffect = ({
@@ -61,7 +62,7 @@ export const TextHoverEffect = ({
           )}
         </linearGradient>
 
-        <motion.radialGradient
+        <m.radialGradient
           id="revealMask"
           gradientUnits="userSpaceOnUse"
           r="20%"
@@ -71,7 +72,7 @@ export const TextHoverEffect = ({
         >
           <stop offset="0%" stopColor="white" />
           <stop offset="100%" stopColor="black" />
-        </motion.radialGradient>
+        </m.radialGradient>
         <mask id="textMask">
           <rect
             x="0"
@@ -93,7 +94,7 @@ export const TextHoverEffect = ({
       >
         {text}
       </text>
-      <motion.text
+      <m.text
         x="50%"
         y="50%"
         textAnchor="middle"
@@ -112,7 +113,7 @@ export const TextHoverEffect = ({
         }}
       >
         {text}
-      </motion.text>
+      </m.text>
       <text
         x="50%"
         y="50%"

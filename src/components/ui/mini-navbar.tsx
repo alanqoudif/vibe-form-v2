@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname, useRouter as useIntlRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -182,24 +182,24 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
   const isHero = variant === 'hero';
   
   // Navigation links - show for all users, but handle click for non-authenticated
-  const navLinks = [
+  const navLinks = useMemo(() => [
     { label: t('feed'), href: '/feed', requiresAuth: false },
     { label: t('forms'), href: '/forms', requiresAuth: true },
     { label: t('credits'), href: '/credits', requiresAuth: true },
-  ];
+  ], [t]);
 
-  const isActivePath = (href: string) => {
+  const isActivePath = useCallback((href: string) => {
     const cleanPath = pathname.replace(/^\/(en|ar)/, '');
     return cleanPath === href || cleanPath.startsWith(href + '/');
-  };
+  }, [pathname]);
 
-  const handleNavClick = (e: React.MouseEvent, link: { href: string; requiresAuth: boolean }) => {
+  const handleNavClick = useCallback((e: React.MouseEvent, link: { href: string; requiresAuth: boolean }) => {
     if (link.requiresAuth && !user) {
       e.preventDefault();
       toast.info(t('loginRequired') || 'Please log in to access this page');
       router.push(`/login?redirect=${link.href}`);
     }
-  };
+  }, [user, router, t]);
 
   return (
     <header className={cn(
@@ -229,6 +229,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                 height={40}
                 className="object-contain"
                 priority
+                sizes="(max-width: 640px) 36px, 40px"
               />
             </div>
             <span className={cn(

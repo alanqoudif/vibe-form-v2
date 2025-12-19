@@ -6,6 +6,7 @@ import { routing } from '@/i18n/routing';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { WebVitalsProvider } from '@/components/providers/web-vitals-provider';
 import { generateMetadata as generateSEOMetadata } from '@/lib/seo/metadata';
 import { Hreflang } from '@/components/seo/hreflang';
 import { OrganizationSchema, WebSiteSchema, LocalBusinessSchema } from '@/components/seo/structured-data';
@@ -88,12 +89,14 @@ export default async function LocaleLayout({
         disableTransitionOnChange={false}
       >
         <QueryProvider>
-          <NextIntlClientProvider messages={messages}>
-            <div lang={locale} dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen flex flex-col">
-              {children}
-            </div>
-            <Toaster position={isRTL ? 'bottom-left' : 'bottom-right'} />
-          </NextIntlClientProvider>
+          <WebVitalsProvider>
+            <NextIntlClientProvider messages={messages}>
+              <div lang={locale} dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen flex flex-col">
+                {children}
+              </div>
+              <Toaster position={isRTL ? 'bottom-left' : 'bottom-right'} />
+            </NextIntlClientProvider>
+          </WebVitalsProvider>
         </QueryProvider>
       </ThemeProvider>
     </>

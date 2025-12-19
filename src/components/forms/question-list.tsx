@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -53,7 +54,7 @@ interface SortableQuestionProps {
   onClick: () => void;
 }
 
-function SortableQuestion({ question, index, isSelected, onClick }: SortableQuestionProps) {
+const SortableQuestion = React.memo(function SortableQuestion({ question, index, isSelected, onClick }: SortableQuestionProps) {
   const t = useTranslations('builder');
   const {
     attributes,
@@ -64,12 +65,12 @@ function SortableQuestion({ question, index, isSelected, onClick }: SortableQues
     isDragging,
   } = useSortable({ id: question.id });
 
-  const style = {
+  const style = useMemo(() => ({
     transform: CSS.Transform.toString(transform),
     transition,
-  };
+  }), [transform, transition]);
 
-  const Icon = questionIcons[question.type] || Type;
+  const Icon = useMemo(() => questionIcons[question.type] || Type, [question.type]);
 
   return (
     <div
@@ -123,7 +124,7 @@ function SortableQuestion({ question, index, isSelected, onClick }: SortableQues
       </div>
     </div>
   );
-}
+});
 
 export function QuestionList() {
   const t = useTranslations('builder');
@@ -163,6 +164,8 @@ export function QuestionList() {
     selectQuestion(newQuestion.id);
   };
 
+  const questionIds = useMemo(() => questions.map(q => q.id), [questions]);
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="p-4 border-b border-border shrink-0">
@@ -184,7 +187,7 @@ export function QuestionList() {
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={questions.map(q => q.id)}
+                items={questionIds}
                 strategy={verticalListSortingStrategy}
               >
                 {questions.map((question, index) => (
