@@ -97,9 +97,12 @@ export function generateMetadata({
     publisher: siteName,
     metadataBase: new URL(siteUrl),
     icons: {
-      icon: '/icon.png',
-      shortcut: '/icon.png',
-      apple: '/icon.png',
+      icon: [
+        { url: `${siteUrl}/icon.png`, sizes: 'any' },
+        { url: `${siteUrl}/icon.png`, type: 'image/png' },
+      ],
+      shortcut: `${siteUrl}/icon.png`,
+      apple: `${siteUrl}/icon.png`,
     },
     alternates: {
       canonical: url,
