@@ -8,7 +8,7 @@ A modern, open-source AI-powered form builder platform with a marketplace for re
 
 ### 🤖 AI-Powered Form Creation
 - Generate professional surveys from natural language descriptions
-- Powered by OpenAI GPT-4
+- Powered by OpenAI GPT-5-Nano
 - Instant form generation in seconds
 - Smart question suggestions and structure optimization
 
