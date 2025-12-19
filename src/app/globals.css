@@ -527,7 +527,7 @@ textarea::placeholder {
   background: rgba(0, 0, 0, 0.3);
 }
 
-/* Mobile Utilities */
+  /* Mobile Utilities */
 @layer utilities {
   /* Touch-friendly interactions */
   .touch-manipulation {
@@ -556,6 +556,48 @@ textarea::placeholder {
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Enhanced touch targets for mobile */
+  .touch-target-lg {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Mobile spacing utilities */
+  .mobile-gap {
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-gap {
+      gap: 1rem;
+    }
+  }
+
+  /* Mobile padding utilities */
+  .mobile-px {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-px {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  .mobile-py {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-py {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
   }
 
   /* Responsive typography */
@@ -611,6 +653,24 @@ textarea::placeholder {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
     border-radius: 0.25rem;
+  }
+
+  /* Enhanced focus styles for touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    *:focus-visible {
+      outline-width: 3px;
+      outline-offset: 3px;
+    }
+    
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline-width: 3px;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 3px var(--ring) / 0.3;
+    }
   }
 
   /* Disable hover effects on touch devices */

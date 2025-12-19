@@ -181,7 +181,7 @@ export default function FormsPage() {
               placeholder={t('searchForms') || 'Search forms...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 sm:h-10 text-sm sm:text-base"
+              className="pl-10 h-12 sm:h-10 text-base sm:text-sm touch-manipulation"
             />
           </div>
 
@@ -190,7 +190,7 @@ export default function FormsPage() {
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
-              className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation"
+              className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] touch-manipulation"
             >
               <LayoutGrid className="w-4 h-4" />
               <span className="ml-2 sm:hidden text-xs">Grid</span>
@@ -199,7 +199,7 @@ export default function FormsPage() {
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className="flex-1 sm:flex-initial min-h-[44px] touch-manipulation"
+              className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] touch-manipulation"
             >
               <List className="w-4 h-4" />
               <span className="ml-2 sm:hidden text-xs">List</span>
@@ -339,20 +339,20 @@ export default function FormsPage() {
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex gap-2 pt-3 sm:pt-4">
+                <CardFooter className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 min-h-[44px] touch-manipulation"
+                    className="flex-1 min-h-[48px] sm:min-h-[44px] touch-manipulation text-sm sm:text-xs"
                     onClick={() => handleBoost(form.id)}
                   >
-                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    <span className="text-xs sm:text-sm">{t('boost') || 'Boost'}</span>
+                    <TrendingUp className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-2 sm:mr-1.5" />
+                    <span>{t('boost') || 'Boost'}</span>
                   </Button>
                   <Link href={`/forms/${form.id}/analytics`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full min-h-[44px] touch-manipulation">
-                      <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                      <span className="text-xs sm:text-sm">{t('analytics') || 'Analytics'}</span>
+                    <Button variant="outline" size="sm" className="w-full min-h-[48px] sm:min-h-[44px] touch-manipulation text-sm sm:text-xs">
+                      <BarChart3 className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-2 sm:mr-1.5" />
+                      <span>{t('analytics') || 'Analytics'}</span>
                     </Button>
                   </Link>
                 </CardFooter>

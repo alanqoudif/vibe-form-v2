@@ -71,12 +71,12 @@ export function QuestionEditor() {
   const needsChoices = ['mcq', 'checkbox', 'dropdown'].includes(selectedQuestion.type);
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto h-full">
       <Card className="bg-card border-border">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg text-foreground">{t('questionSettings') || 'Question Settings'}</CardTitle>
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="text-base sm:text-lg text-foreground">{t('questionSettings') || 'Question Settings'}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4">
           {/* Question Type */}
           <div className="space-y-2">
             <Label className="text-muted-foreground">{t('questionType') || 'Question Type'}</Label>
@@ -105,33 +105,34 @@ export function QuestionEditor() {
 
           {/* Question Title */}
           <div className="space-y-2">
-            <Label className="text-muted-foreground">{t('question') || 'Question'}</Label>
+            <Label className="text-sm sm:text-base text-muted-foreground">{t('question') || 'Question'}</Label>
             <Textarea
               value={selectedQuestion.title}
               onChange={(e) => handleUpdate({ title: e.target.value })}
               placeholder={t('enterQuestion') || 'Enter your question...'}
-              className="bg-muted border-border text-foreground placeholder:text-muted-foreground resize-none"
-              rows={2}
+              className="bg-muted border-border text-foreground placeholder:text-muted-foreground resize-none min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
+              rows={3}
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label className="text-muted-foreground">{t('description')} ({t('optional') || 'Optional'})</Label>
+            <Label className="text-sm sm:text-base text-muted-foreground">{t('description')} ({t('optional') || 'Optional'})</Label>
             <Input
               value={selectedQuestion.description || ''}
               onChange={(e) => handleUpdate({ description: e.target.value || null })}
               placeholder={t('addHelperText') || 'Add helper text...'}
-              className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+              className="bg-muted border-border text-foreground placeholder:text-muted-foreground h-11 sm:h-10 text-sm sm:text-base"
             />
           </div>
 
           {/* Required Toggle */}
-          <div className="flex items-center justify-between">
-            <Label className="text-muted-foreground">{t('required')}</Label>
+          <div className="flex items-center justify-between min-h-[44px]">
+            <Label className="text-sm sm:text-base text-muted-foreground">{t('required')}</Label>
             <Switch
               checked={selectedQuestion.required || false}
               onCheckedChange={(checked) => handleUpdate({ required: checked })}
+              className="touch-manipulation"
             />
           </div>
         </CardContent>
@@ -140,24 +141,24 @@ export function QuestionEditor() {
       {/* Options for choice-based questions */}
       {needsChoices && (
         <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-foreground">{t('options')}</CardTitle>
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg text-foreground">{t('options')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {(options.choices || []).map((choice, index) => (
               <div key={index} className="flex items-center gap-2">
-                <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                <GripVertical className="w-4 h-4 text-muted-foreground cursor-move shrink-0 touch-none" />
                 <Input
                   value={choice}
                   onChange={(e) => handleChoiceChange(index, e.target.value)}
                   placeholder={`${t('option') || 'Option'} ${index + 1}`}
-                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground flex-1"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground flex-1 h-11 sm:h-10 text-sm sm:text-base"
                 />
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => removeChoice(index)}
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive min-h-[44px] min-w-[44px] touch-manipulation shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -166,7 +167,7 @@ export function QuestionEditor() {
             <Button
               variant="outline"
               onClick={addChoice}
-              className="w-full bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="w-full bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground min-h-[44px] touch-manipulation"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t('addOption')}
@@ -178,46 +179,46 @@ export function QuestionEditor() {
       {/* Likert Scale Options */}
       {selectedQuestion.type === 'likert' && (
         <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-foreground">{t('scaleSettings') || 'Scale Settings'}</CardTitle>
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg text-foreground">{t('scaleSettings') || 'Scale Settings'}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground">{t('scale') || 'Scale'}</Label>
+              <Label className="text-sm sm:text-base text-muted-foreground">{t('scale') || 'Scale'}</Label>
               <Select
                 value={String(options.scale || 5)}
                 onValueChange={(value) => handleOptionsUpdate({ scale: Number(value) as 5 | 7 })}
               >
-                <SelectTrigger className="bg-muted border-border text-foreground">
+                <SelectTrigger className="bg-muted border-border text-foreground h-11 sm:h-10 text-sm sm:text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
-                  <SelectItem value="5" className="text-foreground">1-5</SelectItem>
-                  <SelectItem value="7" className="text-foreground">1-7</SelectItem>
+                  <SelectItem value="5" className="text-foreground min-h-[44px]">1-5</SelectItem>
+                  <SelectItem value="7" className="text-foreground min-h-[44px]">1-7</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-muted-foreground">{t('lowLabel') || 'Low Label'}</Label>
+                <Label className="text-sm sm:text-base text-muted-foreground">{t('lowLabel') || 'Low Label'}</Label>
                 <Input
                   value={options.labels?.low || ''}
                   onChange={(e) => handleOptionsUpdate({ 
                     labels: { ...options.labels, low: e.target.value, high: options.labels?.high || '' }
                   })}
                   placeholder={t('stronglyDisagree') || 'Strongly Disagree'}
-                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground h-11 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-muted-foreground">{t('highLabel') || 'High Label'}</Label>
+                <Label className="text-sm sm:text-base text-muted-foreground">{t('highLabel') || 'High Label'}</Label>
                 <Input
                   value={options.labels?.high || ''}
                   onChange={(e) => handleOptionsUpdate({ 
                     labels: { ...options.labels, high: e.target.value, low: options.labels?.low || '' }
                   })}
                   placeholder={t('stronglyAgree') || 'Strongly Agree'}
-                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground h-11 sm:h-10 text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -228,22 +229,22 @@ export function QuestionEditor() {
       {/* Rating Options */}
       {selectedQuestion.type === 'rating' && (
         <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-foreground">{t('ratingSettings') || 'Rating Settings'}</CardTitle>
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg text-foreground">{t('ratingSettings') || 'Rating Settings'}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">{t('maxStars') || 'Max Stars'}</Label>
+              <Label className="text-sm sm:text-base text-muted-foreground">{t('maxStars') || 'Max Stars'}</Label>
               <Select
                 value={String(options.maxStars || 5)}
                 onValueChange={(value) => handleOptionsUpdate({ maxStars: Number(value) as 5 | 10 })}
               >
-                <SelectTrigger className="bg-muted border-border text-foreground">
+                <SelectTrigger className="bg-muted border-border text-foreground h-11 sm:h-10 text-sm sm:text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
-                  <SelectItem value="5" className="text-foreground">5 {t('stars') || 'Stars'}</SelectItem>
-                  <SelectItem value="10" className="text-foreground">10 {t('stars') || 'Stars'}</SelectItem>
+                  <SelectItem value="5" className="text-foreground min-h-[44px]">5 {t('stars') || 'Stars'}</SelectItem>
+                  <SelectItem value="10" className="text-foreground min-h-[44px]">10 {t('stars') || 'Stars'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -255,7 +256,7 @@ export function QuestionEditor() {
       <Button
         variant="destructive"
         onClick={() => removeQuestion(selectedQuestion.id)}
-        className="w-full"
+        className="w-full min-h-[44px] touch-manipulation"
       >
         <Trash2 className="w-4 h-4 mr-2" />
         {t('deleteQuestion') || 'Delete Question'}

@@ -36,6 +36,8 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const [responseId, setResponseId] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
   const [theme, setTheme] = useState<FormTheme>(DEFAULT_THEME);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Fetch form and questions
   useEffect(() => {
@@ -184,6 +186,33 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
   const goPrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  // Swipe gesture handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && canProceed() && currentIndex < questions.length - 1) {
+      goNext();
+    }
+    if (isRightSwipe && currentIndex > 0) {
+      goPrev();
     }
   };
 
@@ -465,6 +494,9 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
           <div
             className={cn(cardClasses, "p-4 sm:p-6")}
             style={{ backgroundColor: theme.cardBackground }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
             <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
               <h2
@@ -513,14 +545,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
 
         {/* Navigation */}
         {questions.length > 0 && (
-          <div className="flex justify-between gap-2 sm:gap-3 mt-4 sm:mt-6 pb-2 sm:pb-0">
+          <div className="flex justify-between gap-3 mt-4 sm:mt-6">
             <button
               onClick={goPrev}
               disabled={currentIndex === 0}
               className={cn(
-                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-2.5 rounded-lg border transition-all min-h-[44px] min-w-[44px] touch-manipulation",
-                "text-sm sm:text-base",
-                currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "active:opacity-80"
+                "flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg border transition-all min-h-[48px] touch-manipulation",
+                "text-base font-medium",
+                currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "active:opacity-80 active:scale-[0.98]"
               )}
               style={{
                 borderColor: theme.primaryColor + '50',
@@ -528,7 +560,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 backgroundColor: 'transparent'
               }}
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-5 h-5" />
               <span className="hidden sm:inline">Previous</span>
             </button>
 
@@ -537,29 +569,29 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 onClick={goNext}
                 disabled={!canProceed()}
                 className={cn(
-                  "flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
-                  "text-sm sm:text-base flex-1 sm:flex-initial",
-                  !canProceed() ? "opacity-50 cursor-not-allowed" : "active:opacity-90"
+                  "flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all min-h-[48px] touch-manipulation",
+                  "text-base flex-1 sm:flex-initial",
+                  !canProceed() ? "opacity-50 cursor-not-allowed" : "active:opacity-90 active:scale-[0.98]"
                 )}
                 style={{ backgroundColor: theme.primaryColor }}
               >
                 <span>Next</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-5 h-5" />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 disabled={!canProceed() || isSubmitting}
                 className={cn(
-                  "flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-2.5 rounded-lg text-white font-medium transition-all min-h-[44px] touch-manipulation",
-                  "text-sm sm:text-base flex-1 sm:flex-initial",
-                  (!canProceed() || isSubmitting) ? "opacity-50 cursor-not-allowed" : "active:opacity-90"
+                  "flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all min-h-[48px] touch-manipulation",
+                  "text-base flex-1 sm:flex-initial",
+                  (!canProceed() || isSubmitting) ? "opacity-50 cursor-not-allowed" : "active:opacity-90 active:scale-[0.98]"
                 )}
                 style={{ backgroundColor: '#22c55e' }}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     <span className="hidden sm:inline">Submitting...</span>
                   </>
                 ) : (

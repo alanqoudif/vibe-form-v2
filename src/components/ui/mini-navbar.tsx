@@ -251,21 +251,21 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   key={link.href} 
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link)}
-                  className={cn(
-                    "relative px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300",
-                    "hover:scale-105 active:scale-95",
-                    isActive
-                      ? "bg-primary/15 text-primary shadow-sm shadow-primary/10"
-                      : isHero 
-                        ? "text-white/90 hover:text-white hover:bg-white/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
-                  )}
-                >
-                  {link.label}
-                  {isActive && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/50" />
-                  )}
-                </Link>
+                    className={cn(
+                      "relative px-4 py-3 sm:py-2.5 text-sm font-semibold rounded-xl transition-all duration-300",
+                      "hover:scale-105 active:scale-95 min-h-[48px] sm:min-h-[44px] flex items-center justify-center touch-manipulation",
+                      isActive
+                        ? "bg-primary/15 text-primary shadow-sm shadow-primary/10"
+                        : isHero 
+                          ? "text-white/90 hover:text-white hover:bg-white/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                    )}
+                  >
+                    {link.label}
+                    {isActive && (
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/50" />
+                    )}
+                  </Link>
               );
             })}
           </div>
@@ -406,8 +406,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                       setIsOpen(false);
                     }}
                     className={cn(
-                      "relative px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300",
-                      "active:scale-95 border border-transparent min-h-[44px] flex items-center touch-manipulation",
+                      "relative px-4 py-4 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300",
+                      "active:scale-95 border border-transparent min-h-[48px] sm:min-h-[44px] flex items-center touch-manipulation",
                       isActive
                         ? "bg-primary/15 text-primary border-primary/20 shadow-sm shadow-primary/10"
                         : isHero
@@ -434,8 +434,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
-                    "active:scale-95 border min-h-[44px] flex items-center justify-center gap-2 touch-manipulation",
+                    "px-4 py-4 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
+                    "active:scale-95 border min-h-[48px] sm:min-h-[44px] flex items-center justify-center gap-2 touch-manipulation",
                     isHero 
                       ? "text-white hover:bg-white/10 border-white/20"
                       : "text-foreground hover:bg-muted/70 border-border/50"
@@ -450,8 +450,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
-                    "active:scale-95 border min-h-[44px] flex items-center justify-center gap-2 touch-manipulation",
+                    "px-4 py-4 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
+                    "active:scale-95 border min-h-[48px] sm:min-h-[44px] flex items-center justify-center gap-2 touch-manipulation",
                     isHero 
                       ? "text-white hover:bg-white/10 border-white/20"
                       : "text-foreground hover:bg-muted/70 border-border/50"
@@ -468,8 +468,8 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                     href="/login"
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "px-4 py-3.5 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
-                      "active:scale-95 border min-h-[44px] flex items-center justify-center touch-manipulation",
+                      "px-4 py-4 sm:py-3 text-sm font-semibold rounded-xl transition-all duration-300 text-center",
+                      "active:scale-95 border min-h-[48px] sm:min-h-[44px] flex items-center justify-center touch-manipulation",
                       isHero 
                         ? "text-white hover:bg-white/10 border-white/20"
                         : "text-foreground hover:bg-muted/70 border-border/50"
@@ -480,7 +480,7 @@ export function Navbar({ variant = 'default' }: NavbarProps) {
                   <Link 
                     href="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="px-4 py-3.5 sm:py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary via-primary to-purple-600 rounded-xl text-center hover:opacity-90 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/25 min-h-[44px] flex items-center justify-center touch-manipulation"
+                    className="px-4 py-4 sm:py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary via-primary to-purple-600 rounded-xl text-center hover:opacity-90 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/25 min-h-[48px] sm:min-h-[44px] flex items-center justify-center touch-manipulation"
                   >
                     {t('signup')}
                   </Link>

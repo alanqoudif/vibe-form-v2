@@ -257,13 +257,22 @@ export function HeroWave({
     let DPR_CAP = 2;
     const mm = gsap.matchMedia();
     // Reduce quality on mobile devices for better performance
+    const isMobile = window.innerWidth < 768;
+    const isLowEndDevice = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    // Skip animation on low-end devices or if user prefers reduced motion
+    if (prefersReducedMotion || (isMobile && isLowEndDevice)) {
+      return () => {}; // Return empty cleanup function
+    }
+    
     mm.add("(max-width: 768px)", () => {
       DPR_CAP = 1;
     });
     mm.add("(max-resolution: 180dpi)", () => {
       DPR_CAP = Math.min(DPR_CAP, 1.5);
     });
-    const EFFECT_PR = Math.min(window.devicePixelRatio, DPR_CAP) * 0.5;
+    const EFFECT_PR = Math.min(window.devicePixelRatio, DPR_CAP) * (isMobile ? 0.3 : 0.5);
 
     const waveContainer = waveRef.current!;
     while (waveContainer.firstChild) {
@@ -819,12 +828,18 @@ export function HeroWave({
       cleanup = initThreeJS();
     };
 
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
     // Use requestIdleCallback if available, otherwise use a small delay
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(startInit, { timeout: 1000 });
-    } else {
-      // Fallback: small delay to allow initial render
-      setTimeout(startInit, 100);
+    // Skip animation if user prefers reduced motion
+    if (!prefersReducedMotion) {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(startInit, { timeout: 1500 });
+      } else {
+        // Fallback: small delay to allow initial render
+        setTimeout(startInit, 200);
+      }
     }
 
     return () => {
