@@ -151,6 +151,8 @@ export function usePublicForms(excludeUserId?: string) {
           created_at,
           settings,
           owner_id,
+          category,
+          target_responses,
           responses!inner(count),
           profiles!forms_owner_id_fkey(full_name)
         `, { count: 'exact' })
@@ -171,20 +173,23 @@ export function usePublicForms(excludeUserId?: string) {
       }
 
       // Map results efficiently - only extract needed fields
-      return (data || []).map(form => {
-        const responseCount = Array.isArray(form.responses) 
+      return (data || []).map(form => ({
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        status: form.status,
+        visibility: form.visibility,
+        created_at: form.created_at,
+        settings: form.settings,
+        owner_id: form.owner_id,
+        category: form.category,
+        target_responses: form.target_responses,
+        response_count: Array.isArray(form.responses) 
           ? (form.responses as { count: number }[])?.[0]?.count || 0
-          : 0;
-        const settings = form.settings as { reward?: number } | null;
-        return {
-          ...form,
-          response_count: responseCount,
-          owner_name: (form.profiles as { full_name?: string })?.full_name,
-          reward: settings?.reward || 10, // Default to 10 if not set
-          responses: undefined,
-          profiles: undefined,
-        };
-      });
+          : 0,
+        owner_name: (form.profiles as { full_name?: string })?.full_name,
+        reward: (form.settings as { reward?: number } | null)?.reward || 10, // Default to 10 if not set
+      }));
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - increased for better caching
     gcTime: 15 * 60 * 1000, // 15 minutes cache
