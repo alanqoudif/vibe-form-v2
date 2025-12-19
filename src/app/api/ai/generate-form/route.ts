@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       ],
       response_format: FORM_GENERATION_CONFIG.responseFormat,
       temperature: FORM_GENERATION_CONFIG.temperature,
-      max_tokens: FORM_GENERATION_CONFIG.maxTokens,
+      max_completion_tokens: FORM_GENERATION_CONFIG.maxCompletionTokens,
     });
 
     const responseContent = completion.choices[0]?.message?.content;

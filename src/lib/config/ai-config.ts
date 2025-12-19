@@ -9,7 +9,7 @@ export const AI_CONFIG = {
   model: AI_MODEL,
   temperature: 0.7,
   responseFormat: { type: 'json_object' as const },
-  maxTokens: 2000,
+  maxCompletionTokens: 2000,
 } as const;
 
 /**
@@ -17,7 +17,7 @@ export const AI_CONFIG = {
  */
 export const FORM_GENERATION_CONFIG = {
   ...AI_CONFIG,
-  maxTokens: 2000,
+  maxCompletionTokens: 2000,
 } as const;
 
 /**
