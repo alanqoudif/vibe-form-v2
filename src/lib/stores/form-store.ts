@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { shallow } from 'zustand/shallow';
 import type { Form, FormQuestion } from '@/types/database';
 
 interface FormBuilderState {
@@ -22,7 +23,7 @@ interface FormBuilderState {
   reset: () => void;
 }
 
-export const useFormStore = create<FormBuilderState>((set, get) => ({
+const useFormStoreBase = create<FormBuilderState>((set, get) => ({
   form: null,
   questions: [],
   selectedQuestionId: null,
@@ -84,6 +85,48 @@ export const useFormStore = create<FormBuilderState>((set, get) => ({
     isGenerating: false,
   }),
 }));
+
+// Selectors for optimized re-renders
+export const useFormStore = () => useFormStoreBase();
+
+// Selector for form only
+export const useForm = () => useFormStoreBase((state) => state.form);
+
+// Selector for questions only
+export const useQuestions = () => useFormStoreBase((state) => state.questions, shallow);
+
+// Selector for selected question
+export const useSelectedQuestion = () => {
+  return useFormStoreBase((state) => {
+    if (!state.selectedQuestionId) return null;
+    return state.questions.find((q) => q.id === state.selectedQuestionId) || null;
+  }, shallow);
+};
+
+// Selector for form and questions together (for components that need both)
+export const useFormAndQuestions = () => {
+  return useFormStoreBase((state) => ({
+    form: state.form,
+    questions: state.questions,
+  }), shallow);
+};
+
+// Selector for actions only (doesn't cause re-renders)
+export const useFormActions = () => {
+  return useFormStoreBase((state) => ({
+    setForm: state.setForm,
+    updateForm: state.updateForm,
+    setQuestions: state.setQuestions,
+    addQuestion: state.addQuestion,
+    updateQuestion: state.updateQuestion,
+    removeQuestion: state.removeQuestion,
+    reorderQuestions: state.reorderQuestions,
+    selectQuestion: state.selectQuestion,
+    setDirty: state.setDirty,
+    setGenerating: state.setGenerating,
+    reset: state.reset,
+  }));
+};
 
 
 

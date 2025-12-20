@@ -33,7 +33,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useFormStore } from '@/lib/stores/form-store';
+import { useQuestions, useFormStore, useFormActions } from '@/lib/stores/form-store';
 import type { FormQuestion } from '@/types/database';
 import { cn } from '@/lib/utils';
 
@@ -128,7 +128,9 @@ const SortableQuestion = React.memo(function SortableQuestion({ question, index,
 
 export function QuestionList() {
   const t = useTranslations('builder');
-  const { questions, selectedQuestionId, selectQuestion, reorderQuestions, addQuestion } = useFormStore();
+  const questions = useQuestions();
+  const selectedQuestionId = useFormStore((state) => state.selectedQuestionId);
+  const { selectQuestion, reorderQuestions, addQuestion } = useFormActions();
   
   const sensors = useSensors(
     useSensor(PointerSensor),

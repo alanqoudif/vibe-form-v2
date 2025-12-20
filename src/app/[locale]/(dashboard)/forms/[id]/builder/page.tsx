@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
-import { useFormStore } from '@/lib/stores/form-store';
+import { useFormStore, useFormAndQuestions, useFormActions } from '@/lib/stores/form-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { QuestionList } from '@/components/forms/question-list';
-import { QuestionEditor } from '@/components/forms/question-editor';
-import { FormPreview } from '@/components/forms/form-preview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,8 +32,12 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import type { Form, FormQuestion, Json } from '@/types/database';
-import { ThemePicker } from '@/components/forms/theme-picker';
 import { FormTheme, DEFAULT_THEME } from '@/types/form-theme';
+
+// Lazy load heavy components
+const QuestionEditor = lazy(() => import('@/components/forms/question-editor').then(m => ({ default: m.QuestionEditor })));
+const FormPreview = lazy(() => import('@/components/forms/form-preview').then(m => ({ default: m.FormPreview })));
+const ThemePicker = lazy(() => import('@/components/forms/theme-picker').then(m => ({ default: m.ThemePicker })));
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -70,16 +72,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
   const supabase = createClient();
   const queryClient = useQueryClient();
 
-  const {
-    form,
-    questions,
-    isDirty,
-    setForm,
-    setQuestions,
-    updateForm,
-    setDirty,
-    reset
-  } = useFormStore();
+  const { form, questions } = useFormAndQuestions();
+  const isDirty = useFormStore((state) => state.isDirty);
+  const { setForm, setQuestions, updateForm, setDirty, reset } = useFormActions();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -105,14 +100,24 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
       setIsLoading(true);
 
       try {
-        // Fetch form
-        const { data: formData, error: formError } = await supabase
-          .from('forms')
-          .select('*')
-          .eq('id', id)
-          .single();
+        // Fetch form and questions in parallel for better performance
+        const [formResult, questionsResult] = await Promise.all([
+          supabase
+            .from('forms')
+            .select('*')
+            .eq('id', id)
+            .single(),
+          supabase
+            .from('form_questions')
+            .select('*')
+            .eq('form_id', id)
+            .order('order_index', { ascending: true })
+        ]);
 
         if (!isMounted) return;
+
+        const { data: formData, error: formError } = formResult;
+        const { data: questionsData, error: questionsError } = questionsResult;
 
         if (formError || !formData) {
           console.error('Error fetching form:', formError);
@@ -120,15 +125,6 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
           router.push('/forms');
           return;
         }
-
-        // Fetch questions
-        const { data: questionsData, error: questionsError } = await supabase
-          .from('form_questions')
-          .select('*')
-          .eq('form_id', id)
-          .order('order_index', { ascending: true });
-
-        if (!isMounted) return;
 
         if (questionsError) {
           console.error('Error fetching questions:', questionsError);
@@ -455,13 +451,15 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                     </SheetTitle>
                   </SheetHeader>
                   <div className="mt-6">
-                    <ThemePicker
-                      theme={theme}
-                      onChange={(newTheme) => {
-                        setTheme(newTheme);
-                        setDirty(true);
-                      }}
-                    />
+                    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                      <ThemePicker
+                        theme={theme}
+                        onChange={(newTheme) => {
+                          setTheme(newTheme);
+                          setDirty(true);
+                        }}
+                      />
+                    </Suspense>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -671,7 +669,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                     </div>
                     <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
                     <div className="h-full overflow-y-auto pt-16 pb-4">
-                      <QuestionEditor />
+                      <Suspense fallback={<div className="p-4 space-y-4"><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /></div>}>
+                        <QuestionEditor />
+                      </Suspense>
                     </div>
                   </main>
                 </div>
@@ -717,7 +717,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                   "mx-auto transition-all duration-300 rounded-xl overflow-hidden shadow-2xl border border-border",
                   previewMode === 'mobile' ? "max-w-[375px]" : "max-w-2xl"
                 )}>
-                  <FormPreview theme={theme} fullscreen />
+                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                    <FormPreview theme={theme} fullscreen />
+                  </Suspense>
                 </div>
               </TabsContent>
             </Tabs>
@@ -745,7 +747,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
               {/* Question Editor */}
               <main className="hidden lg:flex flex-1 overflow-hidden bg-muted/20 relative">
                 <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
-                <QuestionEditor />
+                <Suspense fallback={<div className="p-4 space-y-4 w-full"><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /></div>}>
+                  <QuestionEditor />
+                </Suspense>
               </main>
 
               {/* Mini Preview - Desktop Only */}
@@ -785,7 +789,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                     "mx-auto transition-all duration-300 rounded-xl overflow-hidden shadow-2xl border border-border",
                     previewMode === 'mobile' ? "w-[320px]" : "w-full"
                   )}>
-                    <FormPreview theme={theme} />
+                    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                      <FormPreview theme={theme} />
+                    </Suspense>
                   </div>
                 </div>
               </aside>
@@ -832,7 +838,9 @@ export default function FormBuilderPage({ params }: { params: Promise<{ id: stri
                   "mx-auto transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-border",
                   previewMode === 'mobile' ? "max-w-[375px]" : "max-w-2xl"
                 )}>
-                  <FormPreview theme={theme} fullscreen />
+                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                    <FormPreview theme={theme} fullscreen />
+                  </Suspense>
                 </div>
               </div>
             </main>

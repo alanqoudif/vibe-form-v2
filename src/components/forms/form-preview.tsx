@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { QuestionRenderer } from './question-types';
-import { useFormStore } from '@/lib/stores/form-store';
+import { useFormAndQuestions } from '@/lib/stores/form-store';
 import { FormTheme, DEFAULT_THEME, getThemeCSS } from '@/types/form-theme';
 import type { Json } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -16,8 +16,8 @@ interface FormPreviewProps {
   fullscreen?: boolean;
 }
 
-export function FormPreview({ theme = DEFAULT_THEME, fullscreen = false }: FormPreviewProps) {
-  const { form, questions } = useFormStore();
+function FormPreviewComponent({ theme = DEFAULT_THEME, fullscreen = false }: FormPreviewProps) {
+  const { form, questions } = useFormAndQuestions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Json>>({});
 
@@ -238,3 +238,5 @@ export function FormPreview({ theme = DEFAULT_THEME, fullscreen = false }: FormP
     </div>
   );
 }
+
+export const FormPreview = memo(FormPreviewComponent);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
-import { useFormStore } from '@/lib/stores/form-store';
+import { useSelectedQuestion, useFormActions } from '@/lib/stores/form-store';
 import { questionTypeConfig, type QuestionType } from './question-types';
 import type { FormQuestion, Json } from '@/types/database';
 
@@ -27,14 +27,10 @@ interface QuestionOptions {
   maxStars?: 5 | 10;
 }
 
-export function QuestionEditor() {
+function QuestionEditorComponent() {
   const t = useTranslations('builder');
-  const { questions, selectedQuestionId, updateQuestion, removeQuestion } = useFormStore();
-  
-  const selectedQuestion = useMemo(
-    () => questions.find(q => q.id === selectedQuestionId),
-    [questions, selectedQuestionId]
-  );
+  const selectedQuestion = useSelectedQuestion();
+  const { updateQuestion, removeQuestion } = useFormActions();
   
   if (!selectedQuestion) {
     return (
@@ -274,3 +270,5 @@ export function QuestionEditor() {
     </div>
   );
 }
+
+export const QuestionEditor = memo(QuestionEditorComponent);
