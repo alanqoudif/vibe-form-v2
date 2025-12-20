@@ -4,6 +4,10 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
+  // Turbopack root directory (fixes multiple lockfiles warning)
+  turbopack: {
+    root: process.cwd(),
+  },
   // Enable experimental features if needed
   experimental: {
     // Enable server actions

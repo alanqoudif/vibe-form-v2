@@ -22,13 +22,21 @@ export const formKeys = {
 };
 
 export function useForms(limit?: number) {
+  // Always call hooks in the same order - never conditionally
   const { user, isHydrated } = useAuthStore();
+  
+  // Create supabase client outside of useQuery to ensure it's stable
+  // Note: createClient() returns a singleton, so this is safe
   const supabase = createClient();
 
+  // Use a stable userId to avoid queryKey changes that could cause hook order issues
+  const userId = user?.id || '';
+
+  // Always call useQuery - never conditionally
   return useQuery({
-    queryKey: limit ? formKeys.recent(user?.id || '', limit) : formKeys.list(user?.id || ''),
+    queryKey: limit ? formKeys.recent(userId, limit) : formKeys.list(userId),
     queryFn: async (): Promise<FormListItem[]> => {
-      if (!user) return [];
+      if (!user || !userId) return [];
 
       let query = supabase
         .from('forms')
@@ -62,7 +70,7 @@ export function useForms(limit?: number) {
       })) as FormListItem[];
     },
     // Only enable when user exists AND store is hydrated to avoid unnecessary calls
-    enabled: !!user && isHydrated,
+    enabled: !!user && !!userId && isHydrated,
     staleTime: 2 * 60 * 1000, // 2 minutes - increased for better caching
     gcTime: 10 * 60 * 1000, // 10 minutes cache (increased from 5)
     refetchOnMount: false, // Don't refetch if we have cached data

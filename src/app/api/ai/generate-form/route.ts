@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { validateServerEnv } from '@/lib/env';
+import { rateLimiters } from '@/lib/rate-limit';
+import { generateFormSchema } from '@/lib/validations/api';
+import { formatErrorResponse, AuthenticationError, ValidationError, ExternalServiceError } from '@/lib/errors';
+import { withTimeout, getNetlifyTimeout } from '@/lib/api-timeout';
+import { logger } from '@/lib/logger';
 
 const SYSTEM_PROMPT = `You are an expert survey and form designer. When given a description, create a professional form structure.
 
@@ -46,47 +48,60 @@ Guidelines:
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate server environment variables (including OPENAI_API_KEY)
+    const serverEnv = validateServerEnv();
+    
+    // Initialize OpenAI client with validated API key
+    const openai = new OpenAI({
+      apiKey: serverEnv.OPENAI_API_KEY,
+    });
+
+    // Rate limiting
+    const rateLimitResponse = rateLimiters.ai(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     // Get the user session
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { message: 'Unauthorized. Please log in.' },
-        { status: 401 }
+      throw new AuthenticationError('Please log in to generate forms');
+    }
+
+    // Parse and validate request body
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      throw new ValidationError('Invalid request body');
+    }
+
+    const validationResult = generateFormSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        validationResult.error.issues[0]?.message || 'Invalid request data',
+        validationResult.error.flatten().fieldErrors
       );
     }
 
-    // Parse the request body
-    const body = await request.json();
-    const { prompt } = body;
+    const { prompt } = validationResult.data;
 
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 10) {
-      return NextResponse.json(
-        { message: 'Please provide a more detailed description (at least 10 characters).' },
-        { status: 400 }
-      );
-    }
-
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { message: 'AI service is not configured. Please contact support.' },
-        { status: 500 }
-      );
-    }
-
-    // Generate form using OpenAI
-    const completion = await openai.chat.completions.create({
+    // Generate form using OpenAI with timeout
+    const completion = await withTimeout(
+      openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: `Create a form for: ${prompt}` }
       ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-      max_tokens: 2000,
-    });
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
+      getNetlifyTimeout()
+    );
 
     const responseContent = completion.choices[0]?.message?.content;
 
@@ -146,11 +161,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (formError || !form) {
-      console.error('Error creating form:', formError);
-      return NextResponse.json(
-        { message: 'Failed to save form. Please try again.' },
-        { status: 500 }
-      );
+      logger.error('Error creating form', { error: formError, userId: user.id });
+      throw new ExternalServiceError('Failed to save form to database', 'supabase');
     }
 
     // Create the questions
@@ -176,14 +188,13 @@ export async function POST(request: NextRequest) {
       .insert(questions);
 
     if (questionsError) {
-      console.error('Error creating questions:', questionsError);
+      logger.error('Error creating questions', { error: questionsError, formId: form.id });
       // Clean up the form if questions failed
       await supabase.from('forms').delete().eq('id', form.id);
-      return NextResponse.json(
-        { message: 'Failed to save questions. Please try again.' },
-        { status: 500 }
-      );
+      throw new ExternalServiceError('Failed to save questions to database', 'supabase');
     }
+
+    logger.info('Form generated successfully', { formId: form.id, userId: user.id });
 
     return NextResponse.json({
       formId: form.id,
@@ -192,10 +203,11 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error in generate-form API:', error);
+    logger.error('Error in generate-form API', { error });
+    const errorResponse = formatErrorResponse(error);
     return NextResponse.json(
-      { message: 'An unexpected error occurred. Please try again.' },
-      { status: 500 }
+      { error: errorResponse.error, code: errorResponse.code },
+      { status: errorResponse.statusCode }
     );
   }
 }

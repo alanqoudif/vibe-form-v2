@@ -1,5 +1,6 @@
 [build]
   command = "npm run build"
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -7,6 +8,64 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+
+# Function configuration
+# Netlify free tier: 10s timeout, paid tier: 26s timeout
+# We set to 8s for free tier to leave buffer for response processing
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["src/**"]
+
+# Redirects for i18n routing
+# Default locale (en) doesn't require prefix, but we redirect for consistency
+[[redirects]]
+  from = "/"
+  to = "/en"
+  status = 302
+  conditions = {Language = ["en"]}
+
+[[redirects]]
+  from = "/"
+  to = "/ar"
+  status = 302
+  conditions = {Language = ["ar"]}
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-DNS-Prefetch-Control = "on"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Security headers for API routes
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+
+# Cache headers for static assets
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache headers for images
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+# Cache headers for fonts
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 # Next.js App Router with i18n routing
 # The Netlify plugin automatically handles:

@@ -1,28 +1,63 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { validateServerEnv } from '@/lib/env';
+import { rateLimiters } from '@/lib/rate-limit';
+import { insightsSchema } from '@/lib/validations/api';
+import { formatErrorResponse, AuthenticationError, ValidationError, NotFoundError, ExternalServiceError } from '@/lib/errors';
+import { withTimeout, getNetlifyTimeout } from '@/lib/api-timeout';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
-  const { formId } = await request.json();
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    // Validate server environment variables (including OPENAI_API_KEY)
+    const serverEnv = validateServerEnv();
+    
+    // Initialize OpenAI client with validated API key
+    const openai = new OpenAI({
+      apiKey: serverEnv.OPENAI_API_KEY,
+    });
+
+    // Rate limiting
+    const rateLimitResponse = rateLimiters.ai(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // Parse and validate request body
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      throw new ValidationError('Invalid request body');
+    }
+
+    const validationResult = insightsSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        validationResult.error.issues[0]?.message || 'Invalid request data'
+      );
+    }
+
+    const { formId } = validationResult.data;
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new AuthenticationError('Please log in to view insights');
+    }
+
     // Fetch form and questions
-    const { data: form } = await supabase
+    const { data: form, error: formError } = await supabase
       .from('forms')
       .select('title, description')
       .eq('id', formId)
       .single();
+
+    if (formError || !form) {
+      throw new NotFoundError('Form not found');
+    }
 
     const { data: questions } = await supabase
       .from('form_questions')
@@ -38,11 +73,9 @@ export async function POST(request: Request) {
       .not('submitted_at', 'is', null);
 
     if (!responses || responses.length < 3) {
-      return NextResponse.json({ 
-        error: 'Not enough responses for analysis',
-        minRequired: 3,
-        current: responses?.length || 0
-      }, { status: 400 });
+      throw new ValidationError(
+        `Not enough responses for analysis. Minimum 3 required, got ${responses?.length || 0}`
+      );
     }
 
     // Format data for AI analysis
@@ -80,26 +113,40 @@ Provide a comprehensive analysis in JSON format with:
 
 Respond ONLY with valid JSON.`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert data analyst specializing in survey analysis. Provide clear, actionable insights from survey data. Always respond with valid JSON.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-    });
+    // Generate insights with timeout
+    const completion = await withTimeout(
+      openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert data analyst specializing in survey analysis. Provide clear, actionable insights from survey data. Always respond with valid JSON.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+      }),
+      getNetlifyTimeout()
+    );
 
-    const insights = JSON.parse(completion.choices[0].message.content || '{}');
+    const responseContent = completion.choices[0]?.message?.content;
+    if (!responseContent) {
+      throw new ExternalServiceError('Failed to generate insights from AI', 'openai');
+    }
+
+    let insights;
+    try {
+      insights = JSON.parse(responseContent);
+    } catch {
+      throw new ExternalServiceError('Failed to parse AI response', 'openai');
+    }
 
     // Store insights in form's analytics_snapshot for caching
-    await supabase
+    const { error: updateError } = await supabase
       .from('forms')
       .update({
         analytics_snapshot: {
@@ -110,17 +157,26 @@ Respond ONLY with valid JSON.`;
       })
       .eq('id', formId);
 
+    if (updateError) {
+      logger.warn('Failed to update analytics snapshot', { error: updateError, formId });
+      // Don't fail the request if snapshot update fails
+    }
+
+    logger.info('Insights generated successfully', { formId, userId: user.id, responseCount: responses.length });
+
     return NextResponse.json({ 
       insights,
       responseCount: responses.length,
       generatedAt: new Date().toISOString(),
     });
 
-  } catch (error: unknown) {
-    console.error('Error generating insights:', error);
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Failed to generate insights'
-    }, { status: 500 });
+  } catch (error) {
+    logger.error('Error generating insights', { error });
+    const errorResponse = formatErrorResponse(error);
+    return NextResponse.json(
+      { error: errorResponse.error, code: errorResponse.code },
+      { status: errorResponse.statusCode }
+    );
   }
 }
 

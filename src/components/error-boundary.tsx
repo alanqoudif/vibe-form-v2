@@ -32,7 +32,24 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Enhanced error logging
+    const errorDetails = {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      timestamp: new Date().toISOString(),
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
+      url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+    };
+
+    console.error('ErrorBoundary caught an error:', errorDetails);
+
+    // In production, you can send this to an error tracking service
+    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Integrate with error tracking service (Sentry, LogRocket, etc.)
+      // For now, we just log to console
+    }
   }
 
   resetError = () => {
@@ -64,9 +81,17 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <CardContent className="space-y-4">
               {this.state.error && (
                 <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-sm text-muted-foreground font-mono break-words">
                     {this.state.error.message || 'Unknown error'}
                   </p>
+                  {process.env.NODE_ENV === 'development' && (
+                    <details className="mt-2">
+                      <summary className="text-xs text-muted-foreground cursor-pointer">Stack trace</summary>
+                      <pre className="text-xs text-muted-foreground mt-2 overflow-auto max-h-40">
+                        {this.state.error.stack}
+                      </pre>
+                    </details>
+                  )}
                 </div>
               )}
               <div className="flex gap-2">

@@ -10,10 +10,10 @@ const protectedRoutes = ['/credits', '/settings'];
 // Routes that should redirect to home if already authenticated
 const authRoutes = ['/login', '/signup'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // Skip middleware for API routes and static files
+  // Skip proxy for API routes and static files
   if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
     return NextResponse.next();
   }
@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(homeUrl);
       }
     } catch (error) {
-      console.error('Middleware auth error:', error);
+      console.error('Proxy auth error:', error);
     }
   }
 

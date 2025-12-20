@@ -10,7 +10,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "type-check": "tsc --noEmit",
+    "prebuild": "node scripts/validate-env.js",
+    "build:check": "npm run type-check && npm run lint && npm run build"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.88",
