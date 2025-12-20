@@ -38,7 +38,7 @@ export function useForms(limit?: number) {
     queryFn: async (): Promise<FormListItem[]> => {
       if (!user || !userId) return [];
 
-      // Optimize query: only select needed fields and use count() for better performance
+      // Optimize query: only select needed fields
       let query = supabase
         .from('forms')
         .select(`
@@ -47,9 +47,8 @@ export function useForms(limit?: number) {
           description,
           status,
           visibility,
-          created_at,
-          responses!left(count)
-        `, { count: 'exact' })
+          created_at
+        `)
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -64,21 +63,33 @@ export function useForms(limit?: number) {
         throw error;
       }
 
+      // Fetch response counts separately for better reliability
+      const formIds = (data || []).map(f => f.id);
+      const countsMap = new Map<string, number>();
+      
+      if (formIds.length > 0) {
+        // Get counts for all forms in one query using aggregation
+        const { data: countsData } = await supabase
+          .from('responses')
+          .select('form_id')
+          .in('form_id', formIds);
+        
+        // Count responses per form
+        (countsData || []).forEach(r => {
+          countsMap.set(r.form_id, (countsMap.get(r.form_id) || 0) + 1);
+        });
+      }
+
       // Map results efficiently
-      return (data || []).map(form => {
-        const responseCount = Array.isArray(form.responses) 
-          ? (form.responses as { count: number }[])?.[0]?.count || 0
-          : 0;
-        return {
-          id: form.id,
-          title: form.title,
-          description: form.description,
-          status: form.status,
-          visibility: form.visibility,
-          created_at: form.created_at,
-          response_count: responseCount,
-        } as FormListItem;
-      });
+      return (data || []).map(form => ({
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        status: form.status,
+        visibility: form.visibility,
+        created_at: form.created_at,
+        response_count: countsMap.get(form.id) || 0,
+      } as FormListItem));
     },
     // Only enable when user exists AND store is hydrated to avoid unnecessary calls
     enabled: !!user && !!userId && isHydrated,
