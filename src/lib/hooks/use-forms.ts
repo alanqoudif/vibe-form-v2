@@ -172,9 +172,8 @@ export function usePublicForms(excludeUserId?: string) {
           owner_id,
           category,
           target_responses,
-          responses!inner(count),
           profiles!forms_owner_id_fkey(full_name)
-        `, { count: 'exact' })
+        `)
         .eq('status', 'published')
         .eq('visibility', 'public')
         .order('created_at', { ascending: false })
@@ -191,6 +190,21 @@ export function usePublicForms(excludeUserId?: string) {
         throw error;
       }
 
+      // Fetch response counts separately for better reliability
+      const formIds = (data || []).map(f => f.id);
+      const countsMap = new Map<string, number>();
+      
+      if (formIds.length > 0) {
+        const { data: countsData } = await supabase
+          .from('responses')
+          .select('form_id')
+          .in('form_id', formIds);
+        
+        (countsData || []).forEach(r => {
+          countsMap.set(r.form_id, (countsMap.get(r.form_id) || 0) + 1);
+        });
+      }
+
       // Map results efficiently - only extract needed fields
       return (data || []).map(form => ({
         id: form.id,
@@ -203,9 +217,7 @@ export function usePublicForms(excludeUserId?: string) {
         owner_id: form.owner_id,
         category: form.category,
         target_responses: form.target_responses,
-        response_count: Array.isArray(form.responses) 
-          ? (form.responses as { count: number }[])?.[0]?.count || 0
-          : 0,
+        response_count: countsMap.get(form.id) || 0,
         owner_name: (form.profiles as { full_name?: string })?.full_name,
         reward: (form.settings as { reward?: number } | null)?.reward || 10, // Default to 10 if not set
       }));
