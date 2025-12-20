@@ -132,6 +132,29 @@ export function HeroWave({
   useEffect(() => {
     if (!containerRef.current || !waveRef.current) return;
 
+    // Add will-change hint for better performance
+    if (waveRef.current) {
+      waveRef.current.style.willChange = 'transform, opacity';
+    }
+
+    // Use Intersection Observer to only load Three.js when element is visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0) {
+            // Element is visible, initialize Three.js
+            startInit();
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '50px', // Start loading slightly before element is visible
+        threshold: 0.01,
+      }
+    );
+
     // Defer Three.js initialization to avoid blocking main thread
     // Initialize after initial render and when browser is idle
     const initThreeJS = () => {
@@ -822,28 +845,57 @@ export function HeroWave({
     // Defer Three.js initialization to avoid blocking main thread
     // Wait for initial render and use requestIdleCallback if available
     let cleanup: (() => void) | undefined = undefined;
+    let observerCleanup: (() => void) | undefined = undefined;
     
     const startInit = () => {
       if (!containerRef.current || !waveRef.current) return;
-      cleanup = initThreeJS();
+      
+      // Use requestIdleCallback if available for better performance
+      const initWithIdleCallback = () => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            cleanup = initThreeJS();
+          }, { timeout: 1500 });
+        } else {
+          // Fallback: small delay to allow initial render
+          setTimeout(() => {
+            cleanup = initThreeJS();
+          }, 200);
+        }
+      };
+      
+      initWithIdleCallback();
     };
 
     // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
-    // Use requestIdleCallback if available, otherwise use a small delay
-    // Skip animation if user prefers reduced motion
-    if (!prefersReducedMotion) {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(startInit, { timeout: 1500 });
-      } else {
-        // Fallback: small delay to allow initial render
-        setTimeout(startInit, 200);
-      }
+    // Observe the container for visibility
+    if (!prefersReducedMotion && containerRef.current) {
+      observerCleanup = () => observer.disconnect();
+      observer.observe(containerRef.current);
+      
+      // Fallback: if intersection observer doesn't fire within 2 seconds, start anyway
+      const fallbackTimer = setTimeout(() => {
+        if (!cleanup) {
+          startInit();
+          observer.disconnect();
+        }
+      }, 2000);
+      
+      observerCleanup = () => {
+        clearTimeout(fallbackTimer);
+        observer.disconnect();
+      };
     }
 
     return () => {
       if (cleanup) cleanup();
+      if (observerCleanup) observerCleanup();
+      // Remove will-change hint on cleanup
+      if (waveRef.current) {
+        waveRef.current.style.willChange = 'auto';
+      }
     };
   }, [extendLeftPx]);
 
@@ -926,7 +978,8 @@ export function HeroWave({
           position: "absolute",
           inset: 0,
           zIndex: 1,
-          opacity: 0.8
+          opacity: 0.8,
+          willChange: "transform, opacity"
         }}
       />
     </section>

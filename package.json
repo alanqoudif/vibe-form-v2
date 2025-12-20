@@ -14,7 +14,8 @@
     "lint:fix": "eslint --fix",
     "type-check": "tsc --noEmit",
     "prebuild": "node scripts/validate-env.js",
-    "build:check": "npm run type-check && npm run lint && npm run build"
+    "build:check": "npm run type-check && npm run lint && npm run build",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.88",
@@ -59,11 +60,13 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
+    "web-vitals": "^5.1.0",
     "zod": "^4.1.13",
     "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "^5.15.0",
+    "@next/bundle-analyzer": "^15.1.5",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -25,7 +25,17 @@ import {
 import type { Form } from '@/types/database';
 import { Progress } from '@/components/ui/progress';
 
-interface FeedForm extends Form {
+interface FeedForm {
+  id: string;
+  title: string;
+  description: string | null;
+  status: Form['status'];
+  visibility: Form['visibility'];
+  created_at: string;
+  settings: Form['settings'];
+  owner_id: string;
+  category: string | null;
+  target_responses: number | null;
   response_count: number;
   owner_name?: string;
   reward?: number;
@@ -46,7 +56,7 @@ export default function FeedPage() {
   };
 
   const filterForms = (tab: string): FeedForm[] => {
-    let feedForms = forms as FeedForm[];
+    let feedForms = forms;
 
     if (searchQuery) {
       feedForms = feedForms.filter(f =>

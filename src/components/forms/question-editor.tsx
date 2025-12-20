@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,7 +31,10 @@ export function QuestionEditor() {
   const t = useTranslations('builder');
   const { questions, selectedQuestionId, updateQuestion, removeQuestion } = useFormStore();
   
-  const selectedQuestion = questions.find(q => q.id === selectedQuestionId);
+  const selectedQuestion = useMemo(
+    () => questions.find(q => q.id === selectedQuestionId),
+    [questions, selectedQuestionId]
+  );
   
   if (!selectedQuestion) {
     return (
@@ -40,35 +44,41 @@ export function QuestionEditor() {
     );
   }
 
-  const options = (selectedQuestion.options || {}) as QuestionOptions;
+  const options = useMemo(
+    () => (selectedQuestion.options || {}) as QuestionOptions,
+    [selectedQuestion.options]
+  );
 
-  const handleUpdate = (updates: Partial<FormQuestion>) => {
+  const handleUpdate = useCallback((updates: Partial<FormQuestion>) => {
     updateQuestion(selectedQuestion.id, updates);
-  };
+  }, [selectedQuestion.id, updateQuestion]);
 
-  const handleOptionsUpdate = (optionUpdates: Partial<QuestionOptions>) => {
+  const handleOptionsUpdate = useCallback((optionUpdates: Partial<QuestionOptions>) => {
     handleUpdate({
       options: { ...options, ...optionUpdates } as Json,
     });
-  };
+  }, [options, handleUpdate]);
 
-  const handleChoiceChange = (index: number, value: string) => {
+  const handleChoiceChange = useCallback((index: number, value: string) => {
     const newChoices = [...(options.choices || [])];
     newChoices[index] = value;
     handleOptionsUpdate({ choices: newChoices });
-  };
+  }, [options.choices, handleOptionsUpdate]);
 
-  const addChoice = () => {
+  const addChoice = useCallback(() => {
     const newChoices = [...(options.choices || []), `Option ${(options.choices?.length || 0) + 1}`];
     handleOptionsUpdate({ choices: newChoices });
-  };
+  }, [options.choices, handleOptionsUpdate]);
 
-  const removeChoice = (index: number) => {
+  const removeChoice = useCallback((index: number) => {
     const newChoices = (options.choices || []).filter((_, i) => i !== index);
     handleOptionsUpdate({ choices: newChoices });
-  };
+  }, [options.choices, handleOptionsUpdate]);
 
-  const needsChoices = ['mcq', 'checkbox', 'dropdown'].includes(selectedQuestion.type);
+  const needsChoices = useMemo(
+    () => ['mcq', 'checkbox', 'dropdown'].includes(selectedQuestion.type),
+    [selectedQuestion.type]
+  );
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto h-full">

@@ -438,6 +438,8 @@ export default function PublicFormPage({ params }: { params: Promise<{ slug: str
                 width={32}
                 height={32}
                 className="object-contain"
+                sizes="(max-width: 640px) 28px, 32px"
+                loading="lazy"
               />
             </div>
             <span style={{ color: theme.questionTextColor }} className="font-medium text-sm sm:text-base">Vibe Form</span>

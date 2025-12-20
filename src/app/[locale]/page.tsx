@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { MyFormsSection } from '@/components/landing/my-forms-section';
+import { FeatureCard } from '@/components/landing/feature-card';
+import { SEOContent } from '@/components/landing/seo-content';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useForms } from '@/lib/hooks/use-forms';
 import { toast } from 'sonner';
@@ -109,71 +111,7 @@ export default function HomePage() {
       )}
 
       {/* SEO-optimized content section - Always visible for SEO */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-muted/20">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center">
-            {locale === 'ar' 
-              ? 'صانع نماذج احترافي | Vibeform Pro - استبيانات مجانية'
-              : 'Professional Form Builder | Vibeform Pro - Free Surveys'}
-          </h1>
-          <p className="text-lg text-muted-foreground mb-6 text-center">
-            {locale === 'ar'
-              ? 'أنشئ نماذج واستبيانات احترافية بالذكاء الاصطناعي في ثوانٍ. بديل Google Forms مع ميزات متقدمة، مجتمع مجيبين، وتحليلات ذكية. ابدأ مجاناً الآن!'
-              : 'Create professional forms and surveys with AI in seconds. Google Forms alternative with advanced features, respondent community, and smart analytics. Start free now!'}
-          </p>
-          
-          {/* SEO Content - Rich keywords and internal links */}
-          <div className="mt-8 space-y-4 text-muted-foreground">
-            <p>
-              {locale === 'ar' ? (
-                <>
-                  <strong className="text-foreground">Vibeform Pro</strong> هو أفضل{' '}
-                  <strong className="text-foreground">بديل Google Forms</strong> مع{' '}
-                  <strong className="text-foreground">صانع نماذج</strong> مدعوم بالذكاء الاصطناعي.{' '}
-                  أنشئ <strong className="text-foreground">استبيانات احترافية</strong> في دقائق مع{' '}
-                  <strong className="text-foreground">منصة استبيانات</strong> متقدمة توفر{' '}
-                  <strong className="text-foreground">أداة جمع البيانات</strong> الاحترافية.
-                </>
-              ) : (
-                <>
-                  <strong className="text-foreground">Vibeform Pro</strong> is the best{' '}
-                  <strong className="text-foreground">Google Forms alternative</strong> with an{' '}
-                  <strong className="text-foreground">AI-powered form builder</strong>. Create{' '}
-                  <strong className="text-foreground">professional surveys</strong> in minutes with an{' '}
-                  <strong className="text-foreground">advanced survey platform</strong> that provides{' '}
-                  <strong className="text-foreground">professional data collection tools</strong>.
-                </>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center mt-6">
-              <a 
-                href={locale === 'ar' ? '/ar/features' : '/features'}
-                className="text-primary hover:underline"
-              >
-                {locale === 'ar' ? 'الميزات' : 'Features'}
-              </a>
-              <a 
-                href={locale === 'ar' ? '/ar/pricing' : '/pricing'}
-                className="text-primary hover:underline"
-              >
-                {locale === 'ar' ? 'الأسعار' : 'Pricing'}
-              </a>
-              <a 
-                href={locale === 'ar' ? '/ar/vs-google-forms' : '/vs-google-forms'}
-                className="text-primary hover:underline"
-              >
-                {locale === 'ar' ? 'مقارنة مع Google Forms' : 'vs Google Forms'}
-              </a>
-              <a 
-                href={locale === 'ar' ? '/ar/blog' : '/blog'}
-                className="text-primary hover:underline"
-              >
-                {locale === 'ar' ? 'المدونة' : 'Blog'}
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SEOContent locale={locale} />
 
       {/* Features Section for non-logged in users - Show when hydrated and no user */}
       {showFeatures && (
@@ -212,12 +150,3 @@ export default function HomePage() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
-  return (
-    <article className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all hover:shadow-lg">
-      <div className="text-4xl mb-4" role="img" aria-label={title}>{icon}</div>
-      <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
-    </article>
-  );
-}

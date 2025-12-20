@@ -38,6 +38,7 @@ export function useForms(limit?: number) {
     queryFn: async (): Promise<FormListItem[]> => {
       if (!user || !userId) return [];
 
+      // Optimize query: only select needed fields and use count() for better performance
       let query = supabase
         .from('forms')
         .select(`
@@ -47,8 +48,8 @@ export function useForms(limit?: number) {
           status,
           visibility,
           created_at,
-          responses(count)
-        `)
+          responses!inner(count)
+        `, { count: 'exact' })
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -63,11 +64,21 @@ export function useForms(limit?: number) {
         throw error;
       }
 
-      return (data || []).map(form => ({
-        ...form,
-        response_count: (form.responses as { count: number }[])?.[0]?.count || 0,
-        responses: undefined,
-      })) as FormListItem[];
+      // Map results efficiently
+      return (data || []).map(form => {
+        const responseCount = Array.isArray(form.responses) 
+          ? (form.responses as { count: number }[])?.[0]?.count || 0
+          : 0;
+        return {
+          id: form.id,
+          title: form.title,
+          description: form.description,
+          status: form.status,
+          visibility: form.visibility,
+          created_at: form.created_at,
+          response_count: responseCount,
+        } as FormListItem;
+      });
     },
     // Only enable when user exists AND store is hydrated to avoid unnecessary calls
     enabled: !!user && !!userId && isHydrated,
@@ -136,13 +147,23 @@ export function usePublicForms(excludeUserId?: string) {
   return useQuery({
     queryKey: ['public-forms', excludeUserId],
     queryFn: async () => {
+      // Optimize: only select needed fields
       let query = supabase
         .from('forms')
         .select(`
-          *,
-          responses(count),
+          id,
+          title,
+          description,
+          status,
+          visibility,
+          created_at,
+          settings,
+          owner_id,
+          category,
+          target_responses,
+          responses!inner(count),
           profiles!forms_owner_id_fkey(full_name)
-        `)
+        `, { count: 'exact' })
         .eq('status', 'published')
         .eq('visibility', 'public')
         .order('created_at', { ascending: false })
@@ -159,17 +180,27 @@ export function usePublicForms(excludeUserId?: string) {
         throw error;
       }
 
+      // Map results efficiently - only extract needed fields
       return (data || []).map(form => ({
-        ...form,
-        response_count: (form.responses as { count: number }[])?.[0]?.count || 0,
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        status: form.status,
+        visibility: form.visibility,
+        created_at: form.created_at,
+        settings: form.settings,
+        owner_id: form.owner_id,
+        category: form.category,
+        target_responses: form.target_responses,
+        response_count: Array.isArray(form.responses) 
+          ? (form.responses as { count: number }[])?.[0]?.count || 0
+          : 0,
         owner_name: (form.profiles as { full_name?: string })?.full_name,
-        reward: (form.settings as { reward?: number })?.reward || 10, // Default to 10 if not set
-        responses: undefined,
-        profiles: undefined,
+        reward: (form.settings as { reward?: number } | null)?.reward || 10, // Default to 10 if not set
       }));
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes cache
+    staleTime: 5 * 60 * 1000, // 5 minutes - increased for better caching
+    gcTime: 15 * 60 * 1000, // 15 minutes cache
     refetchOnMount: false, // Don't refetch if we have cached data
     refetchOnWindowFocus: false, // Don't refetch on window focus
   });
