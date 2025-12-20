@@ -5,7 +5,10 @@ import { reportWebVitals } from '@/app/web-vitals';
 
 export function WebVitalsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    reportWebVitals();
+    // Only run on client side after hydration
+    if (typeof window !== 'undefined') {
+      reportWebVitals();
+    }
   }, []);
 
   return <>{children}</>;

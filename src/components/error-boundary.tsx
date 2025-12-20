@@ -120,3 +120,18 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 }
 
+// Client-side wrapper to prevent hydration mismatches
+export function ErrorBoundaryWrapper({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <>{children}</>;
+  }
+
+  return <ErrorBoundary>{children}</ErrorBoundary>;
+}
+

@@ -48,7 +48,7 @@ export function useForms(limit?: number) {
           status,
           visibility,
           created_at,
-          responses!inner(count)
+          responses!left(count)
         `, { count: 'exact' })
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });

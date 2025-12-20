@@ -20,9 +20,9 @@ const HeroWave = dynamic(
     loading: () => (
       <section className="min-h-screen bg-[#0c0c14] dark:bg-[#0c0c14] flex items-center justify-center">
         <div className="text-center px-4">
-          <h1 className="text-white text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight">
-            {typeof window !== 'undefined' ? 'Loading...' : ''}
-          </h1>
+          <div className="text-white text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight">
+            {/* Empty loading state to prevent hydration mismatch */}
+          </div>
         </div>
       </section>
     ),
